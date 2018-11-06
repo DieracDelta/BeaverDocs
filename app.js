@@ -8,7 +8,7 @@ let listener;
 
 app.get('/', function (req, res) {
   // TODO: render something?
-  res.sendFile('views/index.js')
+  res.sendFile('views/index.html', {root: __dirname})
 });
 
 var srv = app.listen(port, function() {
