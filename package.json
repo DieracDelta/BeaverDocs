@@ -1,4 +1,11 @@
 {
+  "name": "974fp",
+  "version": "1.0.0",
+  "description": "s974 final project",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
   "dependencies": {
     "express": "^4.16.4",
     "peer": "^0.2.10",
