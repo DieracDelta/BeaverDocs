@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Collab</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Barlow:100,200,300,400,500,600,700,800">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:100,200,300,400,500,600,700,800">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lato:100,200,300,400,500,600,700,800">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800">
+
+  <link rel="stylesheet" type="text/css" href="codemirror/lib/codemirror.css">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="shortcut icon" href="assets/favicon.png">
+</head>
+<body>
+
+<div class="section-top">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-xs-9 top-color-1">
+      </div>
+      <div class="col-xs-2 top-color-2">
+      </div>
+      <div class="col-xs-1 top-color-3">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-header">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-2">
+      </div>
+      <div class="col-xs-12 col-sm-8">
+        <h1 class="uppercase">Collab</h1>
+        <h3>Private and secure real-time collaborative text editing</h3>
+      </div>
+      <div class="col-sm-2">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+<div class="row">
+  <div class="col-xs-12 col-sm-2 section-peers">
+    <h2 class="uppercase">Peers</h1>
+    <button class="btn-peer">Wild Fox</button>
+    <button class="btn-peer">Lion</button>
+    <button class="btn-peer">Red Panda</button>
+  </div>
+  <div class="col-xs-12 col-sm-10 section-mirror">
+    <textarea id="codemirror-textarea"></textarea>
+  </div>
+</div>
+</div>
+
+<div class="section-footer">
+  Footer
+</div>
+
+  <!-- Javascript -->
+  <script type="text/javascript" src="codemirror/lib/codemirror.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/0.3.16/peer.min.js"></script>
+  <script type="text/javascript" src="app.js"></script>
+</body>
+</html>
