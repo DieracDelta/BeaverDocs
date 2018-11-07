@@ -12,12 +12,12 @@ if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
 } else {
 
   // TODO: do we need config iceservers?
-  var peer = new Peer(
+  var peer = new Peer({
     host: location.hostname,
     port: location.port || (location.protocol === 'https:' ? 443 : 80),
     path: '/peerjs',
     debug: 1
-  );
+  });
 
   var broadcast = new Broadcast(/*TODO*/);
 

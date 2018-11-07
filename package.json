@@ -4,11 +4,15 @@
   "description": "s974 final project",
   "main": "app.js",
   "scripts": {
+    "build": "babel src -d build",
     "start": "node app.js"
   },
   "dependencies": {
     "express": "^4.16.4",
     "peer": "^0.2.10",
     "peerjs": "^0.3.18"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0"
   }
 }
