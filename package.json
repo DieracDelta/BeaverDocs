@@ -5,14 +5,18 @@
   "main": "app.js",
   "scripts": {
     "build": "babel src -d build",
+    "compile": "browserify build/main.js -o public/js/bundle.js",
     "start": "node app.js"
   },
   "dependencies": {
+    "browserify": "^16.2.3",
     "express": "^4.16.4",
     "peer": "^0.2.10",
     "peerjs": "^0.3.18"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0"
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1"
   }
 }
