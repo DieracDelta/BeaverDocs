@@ -1,15 +1,14 @@
 // implementation based on
 // https://www.cs.rutgers.edu/~pxk/417/notes/clocks/index.html
+// TODO remove sid
 
 class VectorClock {
     // ids is a vector of current ids (including node's id)
-    // selfID is the id of the current node
-    constructor(ids, selfID) {
+    constructor(ids) {
         this.mapping = {};
         for (var id of ids) {
             this.mapping[id] = 0;
         }
-        this.selfID = selfID;
     }
 
     // process a received VectorClock event
@@ -28,8 +27,12 @@ class VectorClock {
     }
 
     // increment local vector
-    increment() {
-        this.mapping[this.selfID] += 1;
+    increment(id) {
+        if (id in this.mapping) {
+            this.mapping[id]++;
+        } else {
+            this.mapping[id] = 1;
+        }
     }
 
     // returns a deep copy of the current vector
@@ -38,7 +41,7 @@ class VectorClock {
         for (var aKey of this.mapping) {
             newMapping[aKey] = this.mapping[aKey]
         }
-        return (new VectorClock({}, this.selfID)).processVector(this)
+        return (new VectorClock({})).processVector(this)
     }
 
     // TODO
@@ -67,6 +70,15 @@ class VectorClock {
         }
 
         return greater && less
+    }
+
+    getSafe(id) {
+        if (id in this.mapping) {
+            return this.mapping[id];
+        } else {
+            // TODO should I add this to mapping
+            return 0;
+        }
     }
 }
 
