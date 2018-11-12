@@ -80,23 +80,46 @@ class RGAReplica {
 
     // accept a remote operation for insertion
     insertRemote(op) {
-        var tombstone = op.tombstone;
-        var pos = op.pos;
-        var newNode = new RGANode(op.obj, tombstones4v, null, null);
+
         var ins;
         var ref;
-        if (pos !== null) {
-            // find left object in hash table
-            ref = this.rga[pos.toString()];
-            while (ref !== null && ref.key !== pos) {
-                ref = ref.next;
-            }
-            if (ref === null) {
-                // ERROR!
-                // TODO figure out how to throw exception
-                return false;
+        // if the position (vector) is null, referring to head
+        if (op.pos !== null) {
+            ins = head;
+        } else {
+            // referring to hash
+            if (op.pos.toString() in this.rga.keys()) {
+                ins = this.rga[op.pos.toString()];
+            } else {
+                ins = null;
             }
         }
+
+
+
+
+
+
+
+
+
+        // var tombstone = op.tombstone;
+        // var pos = op.pos;
+        // var newNode = new RGANode(op.obj, tombstones4v, null, null);
+        // var ins;
+        // var ref;
+        // if (pos !== null) {
+        //     // find left object in hash table
+        //     ref = this.rga[pos.toString()];
+        //     while (ref !== null && ref.key !== pos) {
+        //         ref = ref.next;
+        //     }
+        //     if (ref === null) {
+        //         // ERROR!
+        //         // TODO figure out how to throw exception
+        //         return false;
+        //     }
+        // }
         // var prev;
         // var next;
 
