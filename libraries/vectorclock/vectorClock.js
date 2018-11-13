@@ -86,3 +86,8 @@ function union(setA, setB) {
     }
     return _union;
 }
+
+module.exports = {
+    VectorClock,
+    isConcurrent
+};

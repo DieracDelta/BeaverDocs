@@ -1,9 +1,11 @@
+const vc = require('./vectorClock.js');
+
 // vClock is vectorclock
 // offset is integer offset into rgasplittree as described in paper
 // sid is integer site id
 var V3Vector = function (vClock, offset, sid) {
     this.sum = 0;
-    for (var i of vClock.mapping.keys()) {
+    for (var i in vClock.mapping) {
         this.sum += vClock.mapping[i];
     }
     this.sid = sid;
