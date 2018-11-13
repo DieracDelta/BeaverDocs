@@ -1,3 +1,4 @@
+// TODO js-ize this
 class S4Vector {
     // TODO can I get ssn from vclock?
     // ssn is monotonically increasing session number for that site

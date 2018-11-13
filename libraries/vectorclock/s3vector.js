@@ -17,7 +17,7 @@ V3Vector.prototype = {
     toString() {
         return "";
     },
-    hashCode() {
+    hash() {
         var rVal = 3;
         rVal = 79 * rVal + this.sid;
         rVal = 79 * rVal + this.sum;
