@@ -1,6 +1,6 @@
 const s3vector = require('../vectorclock/s3vector');
 const RSTNode = require('./RSTNode');
-const RSTOp = require('./RSTOp');
+const RSTOp = require('../opTypes/Ops');
 const BBT = require('../trees/balancedbinary');
 
 function RSTReplica() {
