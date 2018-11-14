@@ -42,7 +42,7 @@ RSTWrapper.prototype = {
             vPos.sum = temp.sum;
         }
 
-        localIncrement();
+        this.localIncrement(this.sid);
         var vTomb = new s3v.s3Vector(this.siteVC, 0, this.sid);
         var rstOp =
             new Ops.RSTOp(
@@ -54,6 +54,7 @@ RSTWrapper.prototype = {
     },
     // takes a sequence operation to apply to local replica
     // returns a list of RSTOps to broadcast to remote replicas
+    // TODO I guess I don't neeed to increment the global vc ?
     localDelete: function (op) {
         listOfOps = []
         var startPos = this.replica.findPositionInLocalTree(op.pos + 1);
@@ -110,7 +111,23 @@ RSTWrapper.prototype = {
             }
         }
         return listOfOps;
+    },
+    // integrate a remote operation into replica
+    // op: RSTOp
+    integrateRemote: function (op) {
+        this.localIncrement(op.vTomb.sid);
+        this.replica.apply(op);
+    },
+    // increments the global vector
+    localIncrement: function (id) {
+        if (id in this.siteVC.mapping) {
+            this.siteVC.mapping[id]++;
+        } else {
+            this.siteVC.mapping[id] = 1;
+        }
+        // TODO
     }
+
 }
 
 
