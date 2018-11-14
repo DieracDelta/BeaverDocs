@@ -3,16 +3,18 @@ const vc = require('./vectorClock.js');
 // vClock is vectorclock
 // offset is integer offset into rgasplittree as described in paper
 // sid is integer site id
-var V3Vector = function (vClock, offset, sid) {
-    this.sum = 0;
-    for (var i in vClock.mapping) {
-        this.sum += vClock.mapping[i];
+var s3Vector = function (vClock, offset, sid) {
+    if (vClock !== null) {
+        this.sum = 0;
+        for (var i in vClock.mapping) {
+            this.sum += vClock.mapping[i];
+        }
     }
     this.sid = sid;
     this.offset = offset;
 }
 
-V3Vector.prototype = {
+s3Vector.prototype = {
     // TODO
     toString() {
         return "";
