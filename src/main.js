@@ -1,6 +1,3 @@
-// This is the client-side js?
-
-// TODO: import various things...
 import Peer from 'peerjs';
 import Broadcast from './broadcast';
 import Editor from './editor';
@@ -19,11 +16,18 @@ if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
     debug: 1
   });
 
-  var broadcast = new Broadcast(/*TODO*/);
+  var broadcast = new Broadcast();
 
-  var editor = new Editor(/*TODO*/)
+  var editor = new Editor();
+
+  var code = document.getElementById('codemirror-textarea');
+  CodeMirror.fromTextArea(code, {
+    lineNumbers: true
+  });
 
   new Controller(
+    (location.search.slice(1) || '0'),
+    location.origin,
     peer,
     broadcast,
     editor

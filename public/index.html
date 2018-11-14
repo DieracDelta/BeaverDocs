@@ -49,18 +49,22 @@
   </div>
 </div>
 
-<div class="container-fluid">
-<div class="row">
-  <div class="col-xs-12 col-sm-2 section-peers">
-    <h2 class="uppercase">Peers</h1>
-    <button class="btn-peer">Wild Fox</button>
-    <button class="btn-peer">Lion</button>
-    <button class="btn-peer">Red Panda</button>
+<div id="Collab" class="container-fluid hide">
+  <a id="myLink"></a>
+  <p id='myLinkInput'></p>
+  <div class="row">
+    <div id="section-peers" class="col-xs-12 col-sm-2 section-peers">
+      <h2 class="uppercase">Peers</h1>
+      <!--
+      <button class="btn-peer">Wild Fox</button>
+      <button class="btn-peer">Lion</button>
+      <button class="btn-peer">Red Panda</button>
+      -->
+    </div>
+    <div class="col-xs-12 col-sm-10 section-mirror">
+      <textarea id="codemirror-textarea"></textarea>
+    </div>
   </div>
-  <div class="col-xs-12 col-sm-10 section-mirror">
-    <textarea id="codemirror-textarea"></textarea>
-  </div>
-</div>
 </div>
 
 <div class="section-footer">
@@ -71,5 +75,6 @@
   <script type="text/javascript" src="codemirror/lib/codemirror.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/0.3.16/peer.min.js"></script>
   <script type="text/javascript" src="js/index.js"></script>
+  <script type="text/javascript" src="js/bundle.js"></script>
 </body>
 </html>
