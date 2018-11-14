@@ -1,0 +1,122 @@
+const vc = require('../vectorclock/vectorClock');
+const s3v = require('../vectorclock/s3vector');
+const Ops = require('../opTypes/Ops');
+const Replica = require('./RSTReplica');
+const RSTNode = require('./RSTNode');
+
+
+// intuitively this wrapers the replica and performs the necessary insortion/deletion logic
+function RSTWrapper(replica, sid, replicaNum) {
+    this.replica = replica;
+    // sid aka replica number
+    this.sid = sid;
+    this.siteVC = new vc.VectorClock([]);
+}
+
+RSTWrapper.prototype = {
+    // apply sequence operation to local replica
+    // op: SeqOp
+    // returns list of RSTops to broadcast to replicas
+    applyLocal = function (op) {
+        // TODO deal with other cases
+        switch (ops.opType) {
+            case Ops.opEnum.INSERT_OP:
+                return localInsert(op);
+            case Ops.opEnum.DELETE_OP:
+                return localDelete(op);
+            default:
+                return null;
+        }
+
+    },
+    // takes a sequence operation to apply to local replica
+    // returns a list of RSTOps to broadcast to remote replicas
+    localInsert: function (op) {
+        // of type replica.Position
+        var pos = this.replica.findPositionInLocalTree(op.pos);
+        var vPos = null;
+
+        if (!(op.pos <= 0 || this.replica.root === null)) {
+            var temp = pos.node.key;
+            vPos = new s3v.s3Vector(null, temp.offset, temp.sid);
+            vPos.sum = temp.sum;
+        }
+
+        localIncrement();
+        var vTomb = new s3v.s3Vector(this.siteVC, 0, this.sid);
+        var rstOp =
+            new Ops.RSTOp(
+                Ops.opEnum.INSERT_OP, op.contents, vPos, vTomb, pos.offset, 0,
+                op.pos, 0
+            );
+        this.replica.apply(rstOp);
+        return [rstOp];
+    },
+    // takes a sequence operation to apply to local replica
+    // returns a list of RSTOps to broadcast to remote replicas
+    localDelete: function (op) {
+        listOfOps = []
+        var startPos = this.replica.findPositionInLocalTree(op.pos + 1);
+        var endPos = this.replica.findPositionInLocalTree(op.pos + op.arg);
+        var startNode = startPos.node;
+        var endNode = endPos.node;
+
+        if (RSTNode.equal(startNode, endNode)) {
+            var temp = startNode.key;
+            var vPos = new s3v.s3Vector(null, temp.offset, temp.sid);
+            vPos.sum = temp.sum;
+            var rOp = new RSTOp.RSTOp(
+                Ops.opEnum.DELETE_OP, null, vPos, vPos, startPos.offset,
+                endPos.offset, 0, 0
+            );
+            this.replica.apply(rOp);
+            listOfOps.push(rOp);
+        } else {
+            var temp = startNode.key;
+            var vPos = new s3v.s3Vector(null, temp.offset, temp.sid);
+            vPos.sum = temp.sum;
+            var rOp = new RSTOp.RSTOp(
+                Ops.opEnum.DELETE_OP, null, vPos, vPos, startPos.offset,
+                endNode.length, 0, 0
+            );
+            this.replica.apply(rOp);
+            listOfOps.push(rOp);
+
+            var tempNode = startNode.getNextAliveLinkedListNode();
+
+            while (tempNode !== null && RSTNode.equal(tempNode, endNode)) {
+                var temp2 = startNode.key;
+                var vPos2 = new s3v.s3Vector(null, temp2.offset, temp2.sid);
+                vPos2.sum = temp2.sum;
+                var rOp2 = new RSTOp.RSTOp(
+                    Ops.opEnum.DELETE_OP, null, vPos2, vPos2, 0,
+                    endNode.length, 0, 0
+                );
+                this.replica.apply(rOp2);
+                listOfOps.push(rOp2);
+                tempNode = tempNode.getNextAliveLinkedListNode();
+            }
+
+            if (endPos.offset !== 0) {
+                var temp3 = startNode.key;
+                var vPos3 = new s3v.s3Vector(null, temp3.offset, temp3.sid);
+                vPos3.sum = temp3.sum;
+                var rOp3 = new RSTOp.RSTOp(
+                    Ops.opEnum.DELETE_OP, null, vPos3, vPos3, 0,
+                    endPos.offset, 0, 0
+                );
+                this.replica.apply(rOp3);
+                listOfOps.push(rOp3);
+            }
+        }
+        return listOfOps;
+    }
+}
+
+
+
+
+
+module.exports = {
+    RSTWrapper
+}
