@@ -1,4 +1,0 @@
-frontend: https://github.com/codemirror/CodeMirror or https://quilljs.com/
-p2p communication: webrtc: https://webrtc.org/,
-https://codelabs.developers.google.com/codelabs/webrtc-web/#0, https://webrtc.org/start/
-for the latex compilation: https://stackoverflow.com/questions/40896753/how-to-generate-pdf-from-tex-in-browser-using-memoir-document-class

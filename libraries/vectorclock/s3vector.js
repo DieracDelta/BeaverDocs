@@ -44,3 +44,9 @@ function preceeds(a, b) {
 function equal(a, b) {
     return a.sum == b.sum && a.sid == b.sid && a.offset == b.offset;
 }
+
+module.exports = {
+    s3Vector,
+    preceeds,
+    equal
+}
