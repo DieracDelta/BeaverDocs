@@ -1,5 +1,4 @@
 const Helpers = require('./clientSideHelpers');
-console.log("yeet-1");
 var curPeerWrapper = null;
 document.getElementById('init').onclick = function () {
     curPeerWrapper = new Helpers.PeerWrapper();
@@ -16,8 +15,9 @@ document.getElementById('join').onclick = function () {
             document.getElementById('errors').innerHTML = 'Invalid ID';
         } else {
             curPeerWrapper.connect(inputID);
-            curPeerWrapper.PrettyPrintPeerList();
+            curPeerWrapper.PrettyPrintDirectPeerList();
             console.log("successfully conntect to " + inputID);
+            document.getElementById('join').disabled = true;
         }
     }
 }

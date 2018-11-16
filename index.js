@@ -1,3 +1,1 @@
-;
-
 require('./broker.js');
