@@ -33,14 +33,14 @@
       // mapping from id to dataConnection
       this.directlyConnectedPeers = {};
       this.peerId.on('open', id => {
-        console.log("A new person has initiated a connection to you. Their id is:" + id);
-        broadcast(this.indirectlyConnectedPeers);
+        console.log("Your ID is" + id);
       });
       this.peerId.on('connection', conn => {
         this.directlyConnectedPeers[conn.peer] = conn;
         this.PrettyPrintDirectPeerList();
-        console.log("connection established with " + String(conn));
+        console.log("A new person has initiated a connection with you. Their ID is: " + String(conn.peer));
         this.addConnectionListeners(conn);
+        this.broadcastPeerList();
       });
       this.peerId.on('close', () => {
         console.log("peerId " + this.sid + " closed connection");
@@ -53,10 +53,11 @@
     PeerWrapper.prototype = {
       // connect to peer with id
       // id: ten digit integer
-      connect_set: function (peerList) {
+      connectSet: function (peerList) {
+        console.log("checking peer set");
         for (var i = 0; i < peerList.length; i++) {
-          if (this.indirectlyConnectedPeers.includes(peerList[i])) {
-            connect(peerList[i]);
+          if (!this.indirectlyConnectedPeers.includes(peerList[i])) {
+            this.connect(peerList[i]);
           }
         }
       },
@@ -84,7 +85,8 @@
       },
       broadcast: function (data) {
         for (apeerID of Object.keys(this.directlyConnectedPeers)) {
-          this.directlyConnectedPeers[apeerID].send(JSON.stringify(data));
+          console.log("broadcasting" + data);
+          this.directlyConnectedPeers[apeerID].send(data);
         }
       },
       relay: function (fromPeer, data) {
@@ -98,6 +100,9 @@
         conn.on('data', jsonData => {
           console.log("received data: " + jsonData + " from " + conn.peer);
           document.getElementById('broadcasted').innerHTML = JSON.parse(jsonData);
+          if (jsonData.MessageType === PeerListUpdate) {
+            _this.connectSet(jsonData.messageData);
+          }
         });
         conn.on('close', () => {
           console.log("closed connection with peer " + conn.peer);
@@ -111,38 +116,37 @@
           _this.PrettyPrintDirectPeerList();
         });
       },
-      broadcastPeerList() {
+      broadcastPeerList: function () {
+        console.log("broadcasting list");
         this.broadcast({
-          messageType: PeerListUpdate,
-          messageData: this.indirectlyConnectedPeers
+          messageType: MessageType.PeerListUpdate,
+          messageData: this.directlyConnectedPeers
         });
       }
 
-    };
+      // // set union copied off stack overflow
+      // function union(setA, setB) {
+      //     var _union = new Set(setA);
+      //     for (var elem of setB) {
+      //         _union.add(elem);
+      //     }
+      //     return _union;
+      // }
 
-    // // set union copied off stack overflow
-    // function union(setA, setB) {
-    //     var _union = new Set(setA);
-    //     for (var elem of setB) {
-    //         _union.add(elem);
-    //     }
-    //     return _union;
-    // }
-
-    function random_item(items) {
+    };function random_item(items) {
       return items[Math.floor(Math.random() * items.length)];
     }
 
     // operation types
-    // var MessageType = {
-    //     PeerListUpdate = 0,
-    //     BroadcastUpdate = 1
-    // }
-    // Object.freeze(MessageType);
+    var MessageType = {
+      "PeerListUpdate": 0,
+      "BroadcastUpdate": 1
+    };
+    Object.freeze(MessageType);
 
     module.exports = {
-      PeerWrapper
-      // MessageType
+      PeerWrapper,
+      MessageType
     };
   }, { "nanoid/generate": 7, "peerjs": 13 }], 2: [function (require, module, exports) {
     const Helpers = require('./clientSideHelpers');
