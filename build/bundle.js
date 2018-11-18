@@ -33,7 +33,7 @@
       // mapping from id to dataConnection
       this.directlyConnectedPeers = {};
       this.peerId.on('open', id => {
-        console.log("Your ID is" + id);
+        console.log("Your ID is " + id);
       });
       this.peerId.on('connection', conn => {
         this.directlyConnectedPeers[conn.peer] = conn;
@@ -85,7 +85,10 @@
       },
       broadcast: function (data) {
         for (apeerID of Object.keys(this.directlyConnectedPeers)) {
-          console.log("broadcasting" + data);
+          console.log("broadcasting" + JSON.stringify(data));
+          //data = stringifyIfObject(data)
+          console.log(this.directlyConnectedPeers[apeerID].open);
+          //while (!this.directlyConnectedPeers[apeerID].open) { /*wait*/ }
           this.directlyConnectedPeers[apeerID].send(data);
         }
       },
@@ -98,9 +101,9 @@
       },
       addConnectionListeners: conn => {
         conn.on('data', jsonData => {
-          console.log("received data: " + jsonData + " from " + conn.peer);
-          document.getElementById('broadcasted').innerHTML = JSON.parse(jsonData);
-          if (jsonData.MessageType === PeerListUpdate) {
+          console.log("received data: " + JSON.stringify(jsonData) + " from " + conn.peer);
+          document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
+          if (jsonData.MessageType === MessageType.PeerListUpdate) {
             _this.connectSet(jsonData.messageData);
           }
         });
@@ -120,7 +123,7 @@
         console.log("broadcasting list");
         this.broadcast({
           messageType: MessageType.PeerListUpdate,
-          messageData: this.directlyConnectedPeers
+          messageData: Object.keys(this.directlyConnectedPeers)
         });
       }
 
@@ -132,8 +135,14 @@
       //     }
       //     return _union;
       // }
+    };function stringifyIfObject(obj) {
+      if (typeof obj == "object") return JSON.stringify(obj);else {
+        alert("found already stringified object");
+        return obj;
+      }
+    }
 
-    };function random_item(items) {
+    function random_item(items) {
       return items[Math.floor(Math.random() * items.length)];
     }
 
@@ -180,6 +189,8 @@
         curPeerWrapper.broadcast(document.getElementById('joinIDInput').value);
       }
     };
+
+    document.getElementById('init').click();
   }, { "./clientSideHelpers": 1 }], 3: [function (require, module, exports) {
     'use strict';
 

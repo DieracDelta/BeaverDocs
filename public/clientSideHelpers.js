@@ -18,7 +18,7 @@ function PeerWrapper() {
     // mapping from id to dataConnection
     this.directlyConnectedPeers = {};
     this.peerId.on('open', (id) => {
-        console.log("Your ID is" + id);
+        console.log("Your ID is " + id);
     });
     this.peerId.on('connection', (conn) => {
         this.directlyConnectedPeers[conn.peer] = conn;
@@ -71,8 +71,10 @@ PeerWrapper.prototype = {
     },
     broadcast: function (data) {
         for (apeerID of Object.keys(this.directlyConnectedPeers)) {
-            console.log("broadcasting" + data)
-            data = stringifyIfObject(data)
+            console.log("broadcasting" + JSON.stringify(data))
+            //data = stringifyIfObject(data)
+            console.log(this.directlyConnectedPeers[apeerID].open);
+            //while (!this.directlyConnectedPeers[apeerID].open) { /*wait*/ }
             this.directlyConnectedPeers[apeerID].send(data);
         }
     },
@@ -85,9 +87,9 @@ PeerWrapper.prototype = {
     },
     addConnectionListeners: (conn) => {
         conn.on('data', (jsonData) => {
-            console.log("received data: " + jsonData + " from " + conn.peer);
-            document.getElementById('broadcasted').innerHTML = JSON.parse(jsonData);
-            if(jsonData.MessageType===PeerListUpdate){
+            console.log("received data: " + JSON.stringify(jsonData) + " from " + conn.peer);
+            document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
+            if(jsonData.MessageType===MessageType.PeerListUpdate){
                 this.connectSet(jsonData.messageData);
             }
         });
@@ -107,7 +109,7 @@ PeerWrapper.prototype = {
         console.log("broadcasting list")
         this.broadcast({
             messageType: MessageType.PeerListUpdate,
-            messageData: this.directlyConnectedPeers
+            messageData: Object.keys(this.directlyConnectedPeers)
         });
     }
 

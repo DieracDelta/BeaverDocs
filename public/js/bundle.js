@@ -1,185 +1,637 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-var _this = this;
+'use strict';
 
-const generate = require('nanoid/generate');
-const peerjs = require('peerjs');
-const PORT = 2718;
-// TODO things to implement
-// shared list of all peers
-// TODO forward messages
-// TODO message type enum
-// TODO can't establish connection with yourself
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-function PeerWrapper() {
-    this.sid = generate('0123456789', 10);
-    this.peerId = new peerjs(this.sid, {
-        // host: '10.250.0.18',
-        host: 'localhost',
-        port: PORT,
-        path: '/peerjs'
-    });
-    // mapping from id to dataConnection
-    this.directlyConnectedPeers = {};
-    this.peerId.on('open', id => {
-        console.log("Your ID is " + id);
-    });
-    this.peerId.on('connection', conn => {
-        this.directlyConnectedPeers[conn.peer] = conn;
-        this.PrettyPrintDirectPeerList();
-        console.log("A new person has initiated a connection with you. Their ID is: " + String(conn.peer));
-        this.addConnectionListeners(conn);
-        this.broadcastPeerList();
-    });
-    this.peerId.on('close', () => {
-        console.log("peerId " + this.sid + " closed connection");
-    });
-    this.peerId.on('disconnected', () => {
-        console.log('peerId now disconnected from broker server');
-    });
-}
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-PeerWrapper.prototype = {
-    // connect to peer with id
-    // id: ten digit integer
-    connectSet: function (peerList) {
-        console.log("checking peer set");
-        for (var i = 0; i < peerList.length; i++) {
-            if (!this.indirectlyConnectedPeers.includes(peerList[i])) {
-                this.connect(peerList[i]);
-            }
-        }
-    },
-    connect: function (id) {
-        console.log(this.directlyConnectedPeers);
-        if (id in this.directlyConnectedPeers) {
-            this.directlyConnectedPeers[id].close();
-            delete this.directlyConnectedPeers[id];
-        }
-        console.log(this.directlyConnectedPeers);
-        var conn = this.peerId.connect(String(id));
-        conn.on('open', () => {
-            if (id in this.directlyConnectedPeers) {
-                this.directlyConnectedPeers[id].close();
-                delete this.directlyConnectedPeers[id];
-            }
-            console.log("connected to " + id);
-            this.directlyConnectedPeers[id] = conn;
-            this.PrettyPrintDirectPeerList();
-        });
-        this.addConnectionListeners(conn);
-    },
-    PrettyPrintDirectPeerList: function () {
-        document.getElementById('directPeerList').innerHTML = Object.keys(this.directlyConnectedPeers).reduce((a, c) => a + "\n\t" + c, "Directly Connected Peers:");
-    },
-    broadcast: function (data) {
-        for (apeerID of Object.keys(this.directlyConnectedPeers)) {
-            console.log("broadcasting" + JSON.stringify(data));
-            //data = stringifyIfObject(data)
-            console.log(this.directlyConnectedPeers[apeerID].open);
-            //while (!this.directlyConnectedPeers[apeerID].open) { /*wait*/ }
-            this.directlyConnectedPeers[apeerID].send(data);
-        }
-    },
-    relay: function (fromPeer, data) {
-        for (apeerId of Object.keys(this.directlyConnectedPeers)) {
-            if (apeerId !== fromPeer) {
-                this.directlyConnectedPeers[apeerID].send(JSON.stringify(data));
-            }
-        }
-    },
-    addConnectionListeners: conn => {
-        conn.on('data', jsonData => {
-            console.log("received data: " + JSON.stringify(jsonData) + " from " + conn.peer);
-            document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
-            if (jsonData.MessageType === MessageType.PeerListUpdate) {
-                _this.connectSet(jsonData.messageData);
-            }
-        });
-        conn.on('close', () => {
-            console.log("closed connection with peer " + conn.peer);
-            delete _this.directlyConnectedPeers[conn.peer];
-            console.log(_this.directlyConnectedPeers);
-            _this.PrettyPrintDirectPeerList();
-        });
-        conn.on('disconnected', () => {
-            console.log("got disconnected");
-            delete _this.directlyConnectedPeers[conn.peer];
-            _this.PrettyPrintDirectPeerList();
-        });
-    },
-    broadcastPeerList: function () {
-        console.log("broadcasting list");
-        this.broadcast({
-            messageType: MessageType.PeerListUpdate,
-            messageData: Object.keys(this.directlyConnectedPeers)
-        });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// TODO
+
+
+var Broadcast = function () {
+  function Broadcast() {
+    _classCallCheck(this, Broadcast);
+
+    this.controller = null;
+    this.peer = null;
+    this.outConns = [];
+    this.inConns = [];
+    this.outgoingBuffer = [];
+    this.MAX_BUFFER_SIZE = 40;
+    this.currentStream = null;
+  }
+
+  _createClass(Broadcast, [{
+    key: 'bindServerEvents',
+    value: function bindServerEvents(targetPeerId, peer) {
+      this.peer = peer;
+      this.onOpen(targetPeerId);
+      this.heartbeat = this.startPeerHeartBeat(peer);
     }
 
-    // // set union copied off stack overflow
-    // function union(setA, setB) {
-    //     var _union = new Set(setA);
-    //     for (var elem of setB) {
-    //         _union.add(elem);
-    //     }
-    //     return _union;
-    // }
-};function stringifyIfObject(obj) {
-    if (typeof obj == "object") return JSON.stringify(obj);else {
-        alert("found already stringified object");
-        return obj;
-    }
-}
+    // "ON" FUNCTIONS
 
-function random_item(items) {
-    return items[Math.floor(Math.random() * items.length)];
-}
+  }, {
+    key: 'onOpen',
+    value: function onOpen(targetPeerId) {
+      var _this = this;
 
-// operation types
-var MessageType = {
-    "PeerListUpdate": 0,
-    "BroadcastUpdate": 1
-};
-Object.freeze(MessageType);
-
-module.exports = {
-    PeerWrapper,
-    MessageType
-};
-},{"nanoid/generate":7,"peerjs":13}],2:[function(require,module,exports){
-const Helpers = require('./clientSideHelpers');
-var curPeerWrapper = null;
-document.getElementById('init').onclick = function () {
-    curPeerWrapper = new Helpers.PeerWrapper();
-    document.getElementById('init').disabled = true;
-    document.getElementById('myID').innerHTML = "Your ID: " + String(curPeerWrapper.sid);
-};
-document.getElementById('join').onclick = function () {
-    if (curPeerWrapper === null) {
-        document.getElementById(errors).innerHTML = "peer not yet initialized!";
-    } else {
-        var idRegex = /^([0-9]){10}$/;
-        var inputID = document.getElementById('joinIDInput').value;
-        if (!idRegex.test(String(inputID))) {
-            document.getElementById('errors').innerHTML = 'Invalid ID';
+      this.peer.on('open', function (id) {
+        _this.controller.updateShareLink(id);
+        _this.onPeerConnection();
+        _this.onError();
+        _this.onDisconnect();
+        if (targetPeerId == 0) {
+          _this.controller.addToNetwork(id, _this.controller.siteId);
         } else {
-            curPeerWrapper.connect(inputID);
-            curPeerWrapper.PrettyPrintDirectPeerList();
-            console.log("successfully conntect to " + inputID);
-            document.getElementById('join').disabled = true;
+          _this.requestConnection(targetPeerId, id, _this.controller.siteId);
         }
+      });
     }
-};
+  }, {
+    key: 'onPeerConnection',
+    value: function onPeerConnection() {
+      var _this2 = this;
 
-document.getElementById('broadcast').onclick = function () {
-    if (curPeerWrapper === null) {
-        document.getElementById(errors).innerHTML = "peer not yet initialized!";
-    } else {
-        curPeerWrapper.broadcast(document.getElementById('joinIDInput').value);
+      this.peer.on('connection', function (connection) {
+        _this2.onConnection(connection);
+        //this.onVideoCall(connection);
+        _this2.onData(connection);
+        _this2.onConnClose(connection);
+      });
     }
-};
+  }, {
+    key: 'onConnection',
+    value: function onConnection(connection) {
+      this.controller.updateRootUrl(connection.peer);
+      this.addToInConns(connection);
+    }
+  }, {
+    key: 'onData',
+    value: function onData(connection) {
+      var _this3 = this;
 
-document.getElementById('init').click();
-},{"./clientSideHelpers":1}],3:[function(require,module,exports){
+      connection.on('data', function (data) {
+        var dataObj = JSON.parse(data);
+
+        switch (dataObj.type) {
+          case 'connRequest':
+            _this3.evaluateRequest(dataObj.peerId, dataObj.siteId);
+            break;
+          case 'syncResponse':
+            _this3.processOutgoingBuffer(dataObj.peerId);
+            _this3.controller.handleSync(dataObj);
+            break;
+          case 'syncCompleted':
+            _this3.processOutgoingBuffer(dataObj.peerId);
+            break;
+          case 'add to network':
+            _this3.controller.addToNetwork(dataObj.newPeer, dataObj.newSite);
+            break;
+          case 'remove from network':
+            _this3.controller.removeFromNetwork(dataObj.oldPeer);
+            break;
+          default:
+            _this3.controller.handleRemoteOperation(dataObj);
+        }
+      });
+    }
+  }, {
+    key: 'onError',
+    value: function onError() {
+      var _this4 = this;
+
+      this.peer.on('error', function (id) {
+        var pid = String(err).replace("Error: Could not connect to peer ", "");
+        _this4.removeFromConnections(pid);
+        console.log(err.type);
+        if (!_this4.peer.disconnected) {
+          _this4.controller.findNewTarget();
+        }
+        _this4.controller.enableEditor();
+      });
+    }
+  }, {
+    key: 'onDisconnect',
+    value: function onDisconnect() {
+      var _this5 = this;
+
+      this.peer.on('disconnected', function () {
+        _this5.controller.lostConnection();
+      });
+    }
+  }, {
+    key: 'onConnClose',
+    value: function onConnClose(connection) {
+      var _this6 = this;
+
+      connection.on('close', function () {
+        _this6.removeFromConnections(connection.peer);
+        if (connection.peer == _this6.controller.urlId) {
+          var id = _this6.randomId();
+          if (id) {
+            _this6.controller.updatePageURL(id);
+          }
+        }
+        if (!_this6.hasReachedMax()) {
+          _this6.controller.findNewTarget();
+        }
+      });
+    }
+
+    // NETWORK STUFF
+
+  }, {
+    key: 'addToNetwork',
+    value: function addToNetwork(peerId, siteId) {
+      this.send({
+        type: "add to network",
+        newPeer: peerId,
+        newSite: siteId
+      });
+    }
+  }, {
+    key: 'removeFromNetwork',
+    value: function removeFromNetwork(peerId) {
+      this.send({
+        type: "remove from network",
+        oldPeer: peerId
+      });
+      this.controller.removeFromNetwork(peerId);
+    }
+  }, {
+    key: 'send',
+    value: function send(operation) {
+      var operationJSON = JSON.stringify(operation);
+      if (operation.type === 'insert' || operation.type === 'delete') {
+        this.addToOutgoingBuffer(operationJSON);
+      }
+      this.outConns.forEach(function (conn) {
+        return conn.send(operationJSON);
+      });
+    }
+  }, {
+    key: 'evaluateRequest',
+    value: function evaluateRequest(peerId, siteId) {
+      if (this.hasReachedMax()) {
+        this.forwardConnRequest(peerId, siteId);
+      } else {
+        this.acceptConnRequest(peerId, siteId);
+      }
+    }
+  }, {
+    key: 'hasReachedMax',
+    value: function hasReachedMax() {
+      var halfTheNetwork = Math.ceil(this.controller.network.length / 2);
+      var tooManyInConns = this.inConns.length > Math.max(halfTheNetwork, 5);
+      var tooManyOutConns = this.outConns.length > Math.max(halfTheNetwork, 5);
+
+      return tooManyInConns || tooManyOutConns;
+    }
+
+    // CONNECTIONS STUFF
+
+  }, {
+    key: 'requestConnection',
+    value: function requestConnection(target, peerId, siteId) {
+      var conn = this.peer.connect(target);
+      this.addToOutConns(conn);
+      conn.on('open', function () {
+        conn.send(JSON.stringify({
+          type: 'connRequest',
+          peerId: peerId,
+          siteId: siteId
+        }));
+      });
+    }
+  }, {
+    key: 'addToOutConns',
+    value: function addToOutConns(connection) {
+      if (!!connection && !this.isAlreadyConnectedOut(connection)) {
+        this.outConns.push(connection);
+      }
+    }
+  }, {
+    key: 'addToInConns',
+    value: function addToInConns(connection) {
+      if (!!connection && !this.isAlreadyConnectedIn(connection)) {
+        this.inConns.push(connection);
+      }
+    }
+  }, {
+    key: 'removeFromConnections',
+    value: function removeFromConnections(peer) {
+      this.inConns = this.inConns.filter(function (conn) {
+        return conn.peer !== peer;
+      });
+      this.outConns = this.outConns.filter(function (conn) {
+        return conn.peer !== peer;
+      });
+      this.removeFromNetwork(peer);
+    }
+  }, {
+    key: 'isAlreadyConnectedOut',
+    value: function isAlreadyConnectedOut(connection) {
+      if (connection.peer) {
+        return !!this.outConns.find(function (conn) {
+          return conn.peer === connection.peer;
+        });
+      } else {
+        return !!this.outConns.find(function (conn) {
+          return conn.peer.id === connection;
+        });
+      }
+    }
+  }, {
+    key: 'isAlreadyConnectedIn',
+    value: function isAlreadyConnectedIn(connection) {
+      if (connection.peer) {
+        return !!this.inConns.find(function (conn) {
+          return conn.peer === connection.peer;
+        });
+      } else {
+        return !!this.inConns.find(function (conn) {
+          return conn.peer.id === connection;
+        });
+      }
+    }
+  }, {
+    key: 'forwardConnRequest',
+    value: function forwardConnRequest(peerId, siteId) {
+      var connected = this.outConns.filter(function (conn) {
+        return conn.peer !== peerId;
+      });
+      var randomIdx = Math.floor(Math.random() * connected.length);
+      connected[randomIdx].send(JSON.stringify({
+        type: 'connRequest',
+        peerId: peerId,
+        siteId: siteId
+      }));
+    }
+  }, {
+    key: 'acceptConnRequest',
+    value: function acceptConnRequest(peerId, siteId) {
+      var connBack = this.peer.connect(peerId);
+      this.addToOutConns(connBack);
+      this.controller.addToNetwork(peerId, siteId);
+
+      var initialData = JSON.stringify({
+        type: 'syncResponse',
+        siteId: this.controller.siteId,
+        peerId: this.peer.id,
+        //initialStruct: this.controller.crdt.struct,
+        //initialVersions: this.controller.vector.versions,
+        network: this.controller.network
+      });
+
+      if (connBack.open) {
+        connBack.send(initialData);
+      } else {
+        connBack.on('open', function () {
+          connBack.send(initialData);
+        });
+      }
+    }
+
+    // BUFFER STUFF
+
+  }, {
+    key: 'addToOutgoingBuffer',
+    value: function addToOutgoingBuffer(operation) {
+      if (this.outgoingBuffer.length === this.MAX_BUFFER_SIZE) {
+        this.outgoingBuffer.shift();
+      }
+
+      this.outgoingBuffer.push(operation);
+    }
+  }, {
+    key: 'processOutgoingBuffer',
+    value: function processOutgoingBuffer(peerId) {
+      var connection = this.outConns.find(function (conn) {
+        return conn.peer === peerId;
+      });
+      this.outgoingBuffer.forEach(function (op) {
+        connection.send(op);
+      });
+    }
+
+    // HEARTBEAT STUFF
+
+  }, {
+    key: 'startPeerHeartBeat',
+    value: function startPeerHeartBeat(peer) {
+      var timeoutId = 0;
+      var heartbeat = function heartbeat() {
+        timeoutId = setTimeout(heartbeat, 20000);
+        if (peer.socket._wsOpen()) {
+          peer.socket.send({ type: 'HEARTBEAT' });
+        }
+      };
+
+      heartbeat();
+
+      return {
+        start: function start() {
+          if (timeoutId === 0) {
+            heartbeat();
+          }
+        },
+        stop: function stop() {
+          clearTimeout(timeoutId);
+          timeoutId = 0;
+        }
+      };
+    }
+  }]);
+
+  return Broadcast;
+}();
+
+exports.default = Broadcast;
+},{}],2:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // TODO
+
+//import CRDT from './libraries/crdt';
+
+
+var _v = require('uuid/v1');
+
+var _v2 = _interopRequireDefault(_v);
+
+var _editor = require('./editor');
+
+var _editor2 = _interopRequireDefault(_editor);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Controller = function () {
+  function Controller(targetPeerId, host, peer, broadcast, editor) {
+    var doc = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : document;
+    var win = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : window;
+
+    _classCallCheck(this, Controller);
+
+    this.siteId = (0, _v2.default)();
+    this.host = host;
+    this.opBuffer = []; // list of operations (insertions/deletions)
+    // we need to apply.
+    // this.calling = [];
+    this.network = []; // list of other nodes in the network
+    this.urlId = targetPeerId;
+
+    // set up broadcast
+    this.broadcast = broadcast;
+    this.broadcast.controller = this;
+    this.broadcast.bindServerEvents(targetPeerId, peer);
+
+    // set up editor
+    this.editor = editor;
+    this.editor.controller = this;
+    //this.editor.bindChangeEvent();
+
+    if (targetPeerId == 0) this.editor.enableEditor();
+    this.makeName(doc);
+
+    //this.vector = new VersionVector(this.siteId);
+    //this.crdt = new CRDT(this);
+
+    //this.editor.bindButtons();
+    //this.bindCopyEvent(doc);
+  }
+
+  _createClass(Controller, [{
+    key: 'makeName',
+    value: function makeName() {
+      var doc = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
+
+      this.editor.addUser(this.siteId);
+    }
+  }, {
+    key: 'addToNetwork',
+    value: function addToNetwork(peerId, siteId) {
+      var doc = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : document;
+
+      if (!this.network.find(function (obj) {
+        return obj.siteId === siteId;
+      })) {
+        this.network.push({ peerId: peerId, siteId: siteId });
+        if (siteId !== this.siteId) {
+          this.addToListOfPeers(siteId, peerId, doc);
+        }
+
+        this.broadcast.addToNetwork(peerId, siteId);
+      }
+    }
+  }, {
+    key: 'addToListOfPeers',
+    value: function addToListOfPeers(siteId, peerId) {
+      var doc = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : document;
+
+      // 
+      this.editor.addUser(siteId);
+    }
+
+    // SYNC FUNCTIONS
+
+  }, {
+    key: 'handleSync',
+    value: function handleSync(syncObj) {
+      var _this = this;
+
+      var doc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document;
+      var win = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : window;
+
+      if (syncObj.peerId != this.urlId) {
+        this.updatePageURL(syncObj.peerId, win);
+      }
+
+      syncObj.network.forEach(function (obj) {
+        return _this.addToNetwork(obj.peerId, obj.siteId, doc);
+      });
+
+      /*
+      if (this.crdt.totalChars() === 0) {
+        this.populateCRDT(syncObj.initialStruct);
+        this.populateVersionVector(syncObj.initialVersions);
+      }
+      */
+      this.editor.enableEditor();
+
+      this.syncCompleted(syncObj.peerId);
+    }
+  }, {
+    key: 'syncCompleted',
+    value: function syncCompleted(peerId) {
+      var completedMessage = JSON.stringify({
+        type: 'syncCompleted',
+        peerId: this.broadcast.peer.id
+      });
+
+      var connection = this.broadcast.outConns.find(function (conn) {
+        return conn.peer === peerId;
+      });
+
+      if (connection) {
+        connection.send(completedMessage);
+      } else {
+        connection = this.broadcast.peer.connect(peerId);
+        this.broadcast.addToOutConns(connection);
+        connection.on('open', function () {
+          connection.send(completedMessage);
+        });
+      }
+    }
+
+    // UPDATE FUNCTIONS
+
+  }, {
+    key: 'updatePageURL',
+    value: function updatePageURL(id) {
+      var win = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window;
+
+      this.urlId = id;
+
+      var newURL = this.host + '?' + id;
+      win.history.pushState({}, '', newURL);
+    }
+  }, {
+    key: 'updateRootUrl',
+    value: function updateRootUrl(id) {
+      var win = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window;
+
+      if (this.urlId == 0) {
+        this.updatePageURL(id, win);
+      }
+    }
+  }, {
+    key: 'updateShareLink',
+    value: function updateShareLink(id) {
+      var doc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document;
+
+      var shareLink = this.host + '?' + id;
+      var aTag = doc.querySelector('#myLink');
+      var pTag = doc.querySelector('#myLinkInput');
+
+      pTag.textContent = shareLink;
+      aTag.setAttribute('href', shareLink);
+    }
+  }]);
+
+  return Controller;
+}();
+
+exports.default = Controller;
+},{"./editor":3,"uuid/v1":21}],3:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// TODO
+
+
+var Editor = function () {
+  function Editor() {
+    var doc = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
+    var win = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window;
+
+    _classCallCheck(this, Editor);
+
+    this.doc = doc;
+    this.colors = ["#FF8C9A", "#BF9BD8", "#53CCE0", "#637CEA", "#A2BEED"];
+    this.editorHtmlId = "Collab";
+    this.controller = null;
+  }
+
+  _createClass(Editor, [{
+    key: "addUser",
+    value: function addUser(id) {
+      var button = this.doc.createElement('button');
+      button.classList.add('btn-peer');
+      button.innerHTML = id;
+
+      var random_color = this.colors[Math.floor(Math.random() * this.colors.length)];
+      button.style.borderLeft = "2em solid" + random_color;
+
+      this.doc.getElementById('section-peers').appendChild(button);
+    }
+  }, {
+    key: "enableEditor",
+    value: function enableEditor() {
+      this.doc.getElementById(this.editorHtmlId).classList.remove('hide');
+    }
+  }]);
+
+  return Editor;
+}();
+
+exports.default = Editor;
+},{}],4:[function(require,module,exports){
+'use strict';
+
+var _peerjs = require('peerjs');
+
+var _peerjs2 = _interopRequireDefault(_peerjs);
+
+var _broadcast = require('./broadcast');
+
+var _broadcast2 = _interopRequireDefault(_broadcast);
+
+var _editor = require('./editor');
+
+var _editor2 = _interopRequireDefault(_editor);
+
+var _controller = require('./controller');
+
+var _controller2 = _interopRequireDefault(_controller);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// This is the client-side js?
+
+// TODO: import various things...
+if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
+  // do nothing.
+  // no support.
+} else {
+
+  // TODO: do we need config iceservers?
+  var peer = new _peerjs2.default({
+    host: location.hostname,
+    port: location.port || (location.protocol === 'https:' ? 443 : 80),
+    path: '/peerjs',
+    debug: 1
+  });
+
+  var broadcast = new _broadcast2.default();
+
+  var editor = new _editor2.default();
+
+  var code = document.getElementById('codemirror-textarea');
+  CodeMirror.fromTextArea(code, {
+    lineNumbers: true
+  });
+
+  new _controller2.default(location.search.slice(1) || '0', location.origin, peer, broadcast, editor);
+}
+},{"./broadcast":1,"./controller":2,"./editor":3,"peerjs":12}],5:[function(require,module,exports){
 'use strict';
 
 /**
@@ -410,7 +862,7 @@ EventEmitter.EventEmitter3 = EventEmitter;
 //
 module.exports = EventEmitter;
 
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var BufferBuilder = require('./bufferbuilder').BufferBuilder;
 var binaryFeatures = require('./bufferbuilder').binaryFeatures;
 
@@ -931,7 +1383,7 @@ function utf8Length(str){
   }
 }
 
-},{"./bufferbuilder":5}],5:[function(require,module,exports){
+},{"./bufferbuilder":7}],7:[function(require,module,exports){
 var binaryFeatures = {};
 binaryFeatures.useBlobBuilder = (function(){
   try {
@@ -997,92 +1449,7 @@ BufferBuilder.prototype.getBuffer = function() {
 
 module.exports.BufferBuilder = BufferBuilder;
 
-},{}],6:[function(require,module,exports){
-/**
- * Secure random string generator with custom alphabet.
- *
- * Alphabet must contain 256 symbols or less. Otherwise, the generator
- * will not be secure.
- *
- * @param {generator} random The random bytes generator.
- * @param {string} alphabet Symbols to be used in new random string.
- * @param {size} size The number of symbols in new random string.
- *
- * @return {string} Random string.
- *
- * @example
- * const format = require('nanoid/format')
- *
- * function random (size) {
- *   const result = []
- *   for (let i = 0; i < size; i++) {
- *     result.push(randomByte())
- *   }
- *   return result
- * }
- *
- * format(random, "abcdef", 5) //=> "fbaef"
- *
- * @name format
- * @function
- */
-module.exports = function (random, alphabet, size) {
-  var mask = (2 << Math.log(alphabet.length - 1) / Math.LN2) - 1
-  var step = Math.ceil(1.6 * mask * size / alphabet.length)
-
-  var id = ''
-  while (true) {
-    var bytes = random(step)
-    for (var i = 0; i < step; i++) {
-      var byte = bytes[i] & mask
-      if (alphabet[byte]) {
-        id += alphabet[byte]
-        if (id.length === size) return id
-      }
-    }
-  }
-}
-
-/**
- * @callback generator
- * @param {number} bytes The number of bytes to generate.
- * @return {number[]} Random bytes.
- */
-
-},{}],7:[function(require,module,exports){
-var random = require('./random')
-var format = require('./format')
-
-/**
- * Low-level function to change alphabet and ID size.
- *
- * Alphabet must contain 256 symbols or less. Otherwise, the generator
- * will not be secure.
- *
- * @param {string} alphabet Symbols to be used in ID.
- * @param {number} size The number of symbols in ID.
- *
- * @return {string} Unique ID.
- *
- * @example
- * const generate = require('nanoid/generate')
- * model.id = generate('0123456789абвгдеё', 5) //=> "8ё56а"
- *
- * @name generate
- * @function
- */
-module.exports = function (alphabet, size) {
-  return format(random, alphabet, size)
-}
-
-},{"./format":6,"./random":8}],8:[function(require,module,exports){
-var crypto = self.crypto || self.msCrypto
-
-module.exports = function (bytes) {
-  return crypto.getRandomValues(new Uint8Array(bytes))
-}
-
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 require('webrtc-adapter');
 
 module.exports.RTCSessionDescription = window.RTCSessionDescription ||
@@ -1092,7 +1459,7 @@ module.exports.RTCPeerConnection = window.RTCPeerConnection ||
 module.exports.RTCIceCandidate = window.RTCIceCandidate ||
 	window.mozRTCIceCandidate;
 
-},{"webrtc-adapter":20}],10:[function(require,module,exports){
+},{"webrtc-adapter":22}],9:[function(require,module,exports){
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 var Negotiator = require('./negotiator');
@@ -1361,7 +1728,7 @@ DataConnection.prototype.handleMessage = function(message) {
 
 module.exports = DataConnection;
 
-},{"./negotiator":12,"./util":15,"eventemitter3":3,"reliable":16}],11:[function(require,module,exports){
+},{"./negotiator":11,"./util":14,"eventemitter3":5,"reliable":15}],10:[function(require,module,exports){
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 var Negotiator = require('./negotiator');
@@ -1458,7 +1825,7 @@ MediaConnection.prototype.close = function() {
 
 module.exports = MediaConnection;
 
-},{"./negotiator":12,"./util":15,"eventemitter3":3}],12:[function(require,module,exports){
+},{"./negotiator":11,"./util":14,"eventemitter3":5}],11:[function(require,module,exports){
 var util = require("./util");
 var RTCPeerConnection = require("./adapter").RTCPeerConnection;
 var RTCSessionDescription = require("./adapter").RTCSessionDescription;
@@ -1805,7 +2172,7 @@ Negotiator.handleCandidate = function(connection, ice) {
 
 module.exports = Negotiator;
 
-},{"./adapter":9,"./util":15}],13:[function(require,module,exports){
+},{"./adapter":8,"./util":14}],12:[function(require,module,exports){
 var util = require("./util");
 var EventEmitter = require("eventemitter3");
 var Socket = require("./socket");
@@ -2370,7 +2737,7 @@ Peer.prototype.listAllPeers = function(cb) {
 
 module.exports = Peer;
 
-},{"./dataconnection":10,"./mediaconnection":11,"./socket":14,"./util":15,"eventemitter3":3}],14:[function(require,module,exports){
+},{"./dataconnection":9,"./mediaconnection":10,"./socket":13,"./util":14,"eventemitter3":5}],13:[function(require,module,exports){
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 
@@ -2588,7 +2955,7 @@ Socket.prototype.close = function() {
 
 module.exports = Socket;
 
-},{"./util":15,"eventemitter3":3}],15:[function(require,module,exports){
+},{"./util":14,"eventemitter3":5}],14:[function(require,module,exports){
 var defaultConfig = {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]};
 var dataCount = 1;
 
@@ -2914,7 +3281,7 @@ var util = {
 
 module.exports = util;
 
-},{"./adapter":9,"js-binarypack":4}],16:[function(require,module,exports){
+},{"./adapter":8,"js-binarypack":6}],15:[function(require,module,exports){
 var util = require('./util');
 
 /**
@@ -3234,7 +3601,7 @@ Reliable.prototype.onmessage = function(msg) {};
 
 module.exports.Reliable = Reliable;
 
-},{"./util":17}],17:[function(require,module,exports){
+},{"./util":16}],16:[function(require,module,exports){
 var BinaryPack = require('js-binarypack');
 
 var util = {
@@ -3331,7 +3698,7 @@ var util = {
 
 module.exports = util;
 
-},{"js-binarypack":4}],18:[function(require,module,exports){
+},{"js-binarypack":6}],17:[function(require,module,exports){
 /*
  *  Copyright (c) 2017 The WebRTC project authors. All Rights Reserved.
  *
@@ -5185,7 +5552,7 @@ module.exports = function(window, edgeVersion) {
   return RTCPeerConnection;
 };
 
-},{"sdp":19}],19:[function(require,module,exports){
+},{"sdp":18}],18:[function(require,module,exports){
  /* eslint-env node */
 'use strict';
 
@@ -5898,7 +6265,180 @@ if (typeof module === 'object') {
   module.exports = SDPUtils;
 }
 
+},{}],19:[function(require,module,exports){
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
+  return ([bth[buf[i++]], bth[buf[i++]], 
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]]]).join('');
+}
+
+module.exports = bytesToUuid;
+
 },{}],20:[function(require,module,exports){
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+
+// getRandomValues needs to be invoked in a context where "this" is a Crypto
+// implementation. Also, find the complete implementation of crypto on IE11.
+var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto)) ||
+                      (typeof(msCrypto) != 'undefined' && typeof window.msCrypto.getRandomValues == 'function' && msCrypto.getRandomValues.bind(msCrypto));
+
+if (getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+
+  module.exports = function whatwgRNG() {
+    getRandomValues(rnds8);
+    return rnds8;
+  };
+} else {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+
+  module.exports = function mathRNG() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+},{}],21:[function(require,module,exports){
+var rng = require('./lib/rng');
+var bytesToUuid = require('./lib/bytesToUuid');
+
+// **`v1()` - Generate time-based UUID**
+//
+// Inspired by https://github.com/LiosK/UUID.js
+// and http://docs.python.org/library/uuid.html
+
+var _nodeId;
+var _clockseq;
+
+// Previous uuid creation time
+var _lastMSecs = 0;
+var _lastNSecs = 0;
+
+// See https://github.com/broofa/node-uuid for API details
+function v1(options, buf, offset) {
+  var i = buf && offset || 0;
+  var b = buf || [];
+
+  options = options || {};
+  var node = options.node || _nodeId;
+  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
+
+  // node and clockseq need to be initialized to random values if they're not
+  // specified.  We do this lazily to minimize issues related to insufficient
+  // system entropy.  See #189
+  if (node == null || clockseq == null) {
+    var seedBytes = rng();
+    if (node == null) {
+      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
+      node = _nodeId = [
+        seedBytes[0] | 0x01,
+        seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]
+      ];
+    }
+    if (clockseq == null) {
+      // Per 4.2.2, randomize (14 bit) clockseq
+      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
+    }
+  }
+
+  // UUID timestamps are 100 nano-second units since the Gregorian epoch,
+  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
+  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
+  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
+  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime();
+
+  // Per 4.2.1.2, use count of uuid's generated during the current clock
+  // cycle to simulate higher resolution clock
+  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1;
+
+  // Time since last uuid creation (in msecs)
+  var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
+
+  // Per 4.2.1.2, Bump clockseq on clock regression
+  if (dt < 0 && options.clockseq === undefined) {
+    clockseq = clockseq + 1 & 0x3fff;
+  }
+
+  // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
+  // time interval
+  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
+    nsecs = 0;
+  }
+
+  // Per 4.2.1.2 Throw error if too many uuids are requested
+  if (nsecs >= 10000) {
+    throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
+  }
+
+  _lastMSecs = msecs;
+  _lastNSecs = nsecs;
+  _clockseq = clockseq;
+
+  // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
+  msecs += 12219292800000;
+
+  // `time_low`
+  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+  b[i++] = tl >>> 24 & 0xff;
+  b[i++] = tl >>> 16 & 0xff;
+  b[i++] = tl >>> 8 & 0xff;
+  b[i++] = tl & 0xff;
+
+  // `time_mid`
+  var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
+  b[i++] = tmh >>> 8 & 0xff;
+  b[i++] = tmh & 0xff;
+
+  // `time_high_and_version`
+  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
+  b[i++] = tmh >>> 16 & 0xff;
+
+  // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
+  b[i++] = clockseq >>> 8 | 0x80;
+
+  // `clock_seq_low`
+  b[i++] = clockseq & 0xff;
+
+  // `node`
+  for (var n = 0; n < 6; ++n) {
+    b[i + n] = node[n];
+  }
+
+  return buf ? buf : bytesToUuid(b);
+}
+
+module.exports = v1;
+
+},{"./lib/bytesToUuid":19,"./lib/rng":20}],22:[function(require,module,exports){
 (function (global){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
@@ -5915,7 +6455,7 @@ var adapterFactory = require('./adapter_factory.js');
 module.exports = adapterFactory({window: global.window});
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./adapter_factory.js":21}],21:[function(require,module,exports){
+},{"./adapter_factory.js":23}],23:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -6035,7 +6575,6 @@ module.exports = function(dependencies, opts) {
       edgeShim.shimGetUserMedia(window);
       edgeShim.shimPeerConnection(window);
       edgeShim.shimReplaceTrack(window);
-      edgeShim.shimGetDisplayMedia(window);
 
       // the edge shim implements the full RTCIceCandidate object.
 
@@ -6072,7 +6611,7 @@ module.exports = function(dependencies, opts) {
   return adapter;
 };
 
-},{"./chrome/chrome_shim":22,"./common_shim":24,"./edge/edge_shim":25,"./firefox/firefox_shim":28,"./safari/safari_shim":30,"./utils":31}],22:[function(require,module,exports){
+},{"./chrome/chrome_shim":24,"./common_shim":26,"./edge/edge_shim":27,"./firefox/firefox_shim":30,"./safari/safari_shim":32,"./utils":33}],24:[function(require,module,exports){
 
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
@@ -6963,8 +7502,7 @@ module.exports = {
   },
 
   shimGetDisplayMedia: function(window, getSourceId) {
-    if (!window.navigator || !window.navigator.mediaDevices ||
-        'getDisplayMedia' in window.navigator.mediaDevices) {
+    if ('getDisplayMedia' in window.navigator) {
       return;
     }
     // getSourceId is a function that returns a promise resolving with
@@ -6974,7 +7512,7 @@ module.exports = {
           'a function');
       return;
     }
-    window.navigator.mediaDevices.getDisplayMedia = function(constraints) {
+    navigator.getDisplayMedia = function(constraints) {
       return getSourceId(constraints)
         .then(function(sourceId) {
           var widthSpecified = constraints.video && constraints.video.width;
@@ -6994,18 +7532,13 @@ module.exports = {
           if (heightSpecified) {
             constraints.video.mandatory.maxHeight = heightSpecified;
           }
-          return window.navigator.mediaDevices.getUserMedia(constraints);
+          return navigator.mediaDevices.getUserMedia(constraints);
         });
-    };
-    window.navigator.getDisplayMedia = function(constraints) {
-      utils.deprecated('navigator.getDisplayMedia',
-          'navigator.mediaDevices.getDisplayMedia');
-      return window.navigator.mediaDevices.getDisplayMedia(constraints);
     };
   }
 };
 
-},{"../utils.js":31,"./getusermedia":23}],23:[function(require,module,exports){
+},{"../utils.js":33,"./getusermedia":25}],25:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -7254,7 +7787,7 @@ module.exports = function(window) {
   }
 };
 
-},{"../utils.js":31}],24:[function(require,module,exports){
+},{"../utils.js":33}],26:[function(require,module,exports){
 /*
  *  Copyright (c) 2017 The WebRTC project authors. All Rights Reserved.
  *
@@ -7546,7 +8079,7 @@ module.exports = {
   }
 };
 
-},{"./utils":31,"sdp":19}],25:[function(require,module,exports){
+},{"./utils":33,"sdp":18}],27:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -7633,26 +8166,10 @@ module.exports = {
       window.RTCRtpSender.prototype.replaceTrack =
           window.RTCRtpSender.prototype.setTrack;
     }
-  },
-  shimGetDisplayMedia: function(window, preferredMediaSource) {
-    if (!('getDisplayMedia' in window.navigator) ||
-        !window.navigator.mediaDevices ||
-        'getDisplayMedia' in window.navigator.mediaDevices) {
-      return;
-    }
-    var origGetDisplayMedia = window.navigator.getDisplayMedia;
-    window.navigator.mediaDevices.getDisplayMedia = function(constraints) {
-      return origGetDisplayMedia(constraints);
-    };
-    window.navigator.getDisplayMedia = function(constraints) {
-      utils.deprecated('navigator.getDisplayMedia',
-          'navigator.mediaDevices.getDisplayMedia');
-      return origGetDisplayMedia(constraints);
-    };
   }
 };
 
-},{"../utils":31,"./filtericeservers":26,"./getusermedia":27,"rtcpeerconnection-shim":18}],26:[function(require,module,exports){
+},{"../utils":33,"./filtericeservers":28,"./getusermedia":29,"rtcpeerconnection-shim":17}],28:[function(require,module,exports){
 /*
  *  Copyright (c) 2018 The WebRTC project authors. All Rights Reserved.
  *
@@ -7703,7 +8220,7 @@ module.exports = function(iceServers, edgeVersion) {
   });
 };
 
-},{"../utils":31}],27:[function(require,module,exports){
+},{"../utils":33}],29:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -7739,7 +8256,7 @@ module.exports = function(window) {
   };
 };
 
-},{}],28:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -8030,11 +8547,10 @@ module.exports = {
   },
 
   shimGetDisplayMedia: function(window, preferredMediaSource) {
-    if (!window.navigator || !window.navigator.mediaDevices ||
-        'getDisplayMedia' in window.navigator.mediaDevices) {
+    if ('getDisplayMedia' in window.navigator) {
       return;
     }
-    window.navigator.mediaDevices.getDisplayMedia = function(constraints) {
+    navigator.getDisplayMedia = function(constraints) {
       if (!(constraints && constraints.video)) {
         var err = new DOMException('getDisplayMedia without video ' +
             'constraints is undefined');
@@ -8048,17 +8564,12 @@ module.exports = {
       } else {
         constraints.video.mediaSource = preferredMediaSource;
       }
-      return window.navigator.mediaDevices.getUserMedia(constraints);
-    };
-    window.navigator.getDisplayMedia = function(constraints) {
-      utils.deprecated('navigator.getDisplayMedia',
-          'navigator.mediaDevices.getDisplayMedia');
-      return window.navigator.mediaDevices.getDisplayMedia(constraints);
+      return navigator.mediaDevices.getUserMedia(constraints);
     };
   }
 };
 
-},{"../utils":31,"./getusermedia":29}],29:[function(require,module,exports){
+},{"../utils":33,"./getusermedia":31}],31:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -8269,7 +8780,7 @@ module.exports = function(window) {
   };
 };
 
-},{"../utils":31}],30:[function(require,module,exports){
+},{"../utils":33}],32:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -8585,7 +9096,7 @@ module.exports = {
   }
 };
 
-},{"../utils":31}],31:[function(require,module,exports){
+},{"../utils":33}],33:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -8767,4 +9278,4 @@ module.exports = {
   }
 };
 
-},{}]},{},[2]);
+},{}]},{},[4]);

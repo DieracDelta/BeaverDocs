@@ -29,3 +29,5 @@ document.getElementById('broadcast').onclick = function () {
         curPeerWrapper.broadcast(document.getElementById('joinIDInput').value);
     }
 };
+
+document.getElementById('init').click();

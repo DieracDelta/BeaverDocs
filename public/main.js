@@ -30,3 +30,5 @@ document.getElementById('broadcast').onclick = function () {
     }
 
 }
+
+document.getElementById('init').click();
