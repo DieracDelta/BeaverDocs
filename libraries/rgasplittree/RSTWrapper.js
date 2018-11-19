@@ -54,7 +54,7 @@ RSTWrapper.prototype = {
     },
     // takes a sequence operation to apply to local replica
     // returns a list of RSTOps to broadcast to remote replicas
-    // TODO I guess I don't neeed to increment the global vc ?
+    // TODO I guess I don't neeed to increment the global vc on delete operations??
     localDelete: function (op) {
         listOfOps = []
         var startPos = this.replica.findPositionInLocalTree(op.pos + 1);
@@ -66,7 +66,7 @@ RSTWrapper.prototype = {
             var temp = startNode.key;
             var vPos = new s3v.s3Vector(null, temp.offset, temp.sid);
             vPos.sum = temp.sum;
-            var rOp = new RSTOp.RSTOp(
+            var rOp = new Ops.RSTOp(
                 Ops.opEnum.DELETE_OP, null, vPos, vPos, startPos.offset,
                 endPos.offset, 0, 0
             );
@@ -76,7 +76,7 @@ RSTWrapper.prototype = {
             var temp = startNode.key;
             var vPos = new s3v.s3Vector(null, temp.offset, temp.sid);
             vPos.sum = temp.sum;
-            var rOp = new RSTOp.RSTOp(
+            var rOp = new Ops.RSTOp(
                 Ops.opEnum.DELETE_OP, null, vPos, vPos, startPos.offset,
                 endNode.length, 0, 0
             );
@@ -89,7 +89,7 @@ RSTWrapper.prototype = {
                 var temp2 = startNode.key;
                 var vPos2 = new s3v.s3Vector(null, temp2.offset, temp2.sid);
                 vPos2.sum = temp2.sum;
-                var rOp2 = new RSTOp.RSTOp(
+                var rOp2 = new Ops.RSTOp(
                     Ops.opEnum.DELETE_OP, null, vPos2, vPos2, 0,
                     endNode.length, 0, 0
                 );
@@ -102,7 +102,7 @@ RSTWrapper.prototype = {
                 var temp3 = startNode.key;
                 var vPos3 = new s3v.s3Vector(null, temp3.offset, temp3.sid);
                 vPos3.sum = temp3.sum;
-                var rOp3 = new RSTOp.RSTOp(
+                var rOp3 = new Ops.RSTOp(
                     Ops.opEnum.DELETE_OP, null, vPos3, vPos3, 0,
                     endPos.offset, 0, 0
                 );

@@ -9,6 +9,8 @@ var s3Vector = function (vClock, offset, sid) {
         for (var i in vClock.mapping) {
             this.sum += vClock.mapping[i];
         }
+    } else {
+        this.sum = 0;
     }
     this.sid = sid;
     this.offset = offset;
@@ -28,6 +30,7 @@ s3Vector.prototype = {
 }
 
 // true iff s4Vector a preceeds s4Vector b
+// TODO it would be good to do some sort of type checking here
 function preceeds(a, b) {
     if (a.sum < b.sum) {
         return true;
