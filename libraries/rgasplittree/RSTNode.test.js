@@ -35,7 +35,7 @@ test("testing RSTNode getcontents method", () => {
     var test1 = new RSTNode.RSTNode(key, content, null, null, false, null);
     expect(test1.getContents()).toEqual("foobar");
     var test2 = new RSTNode.RSTNode(key, content, null, null, true, null);
-    expect(test2.getContents()).toEqual("RIP");
+    expect(test2.getContents()).toEqual("");
 });
 
 test("testing RSTNode kill method", () => {

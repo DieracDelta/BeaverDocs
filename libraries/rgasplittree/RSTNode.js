@@ -29,7 +29,8 @@ RSTNode.prototype = {
         if (!this.isTombstone) {
             return this.content.reduce((a, c) => a + c, "");
         } else {
-            return "RIP";
+            // return "RIP";
+            return "";
         }
     },
     // delete should kill a node

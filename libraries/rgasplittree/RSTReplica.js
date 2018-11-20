@@ -1,14 +1,16 @@
 const s3vector = require('../vectorclock/s3vector');
 const RSTNode = require('./RSTNode');
 const RSTOp = require('../opTypes/Ops');
-const BBT = require('../trees/balancedbinary');
+const bbt = require('../trees/balancedbinary');
 const hashmap = require('../../node_modules/hashmap/hashmap');
 
 function RSTReplica() {
     // TODO create your own version of dictionary that hashes s3vectors -> nodes
     this.dict = new hashmap.HashMap();
+    // head of the linked list
     this.head = new RSTNode.RSTNode(null, null, null, null, true, null);
-    this.root = null
+    // root of the tree
+    this.root = null;
     this.size = 0;
 }
 
@@ -30,11 +32,11 @@ RSTReplica.prototype = {
     // op: remote RSTOp to apply to local replica
     // returns boolean indicating success
     remoteInsert: function (op) {
-        var insNode = new RSTNode(op.vTomb, op.contents, null, null, false, null)
+        var insNode = new RSTNode.RSTNode(op.vTomb, op.contents, null, null, false, null)
         var refNode, nextNode, refTree;
 
         if (op.vPos === null) {
-            refNode = head;
+            refNode = this.head;
         } else {
             var netOffset = op.offsetStart + op.vPos.offset;
             refNode = getSuitableNode(this.dict.get(op.vPos.hash()), netOffset);
@@ -43,7 +45,8 @@ RSTReplica.prototype = {
 
         nextNode = refNode.nextLink;
         while (nextNode !== null) {
-            if (s3vector.preceeds(next.key, op.vTomb)) {
+            // TODO add into while statement :/
+            if (s3vector.preceeds(nextNode.key, op.vTomb)) {
                 break;
             }
             refNode = nextNode;
@@ -53,7 +56,7 @@ RSTReplica.prototype = {
 
         refTree = refNode.getNextAliveLinkedListNode();
 
-        insertInLocalTree(refTree, insNode);
+        this.insertInLocalTree(refTree, insNode);
 
         insNode.nextLink = nextNode;
         refNode.nextLink = insNode;
@@ -123,7 +126,7 @@ RSTReplica.prototype = {
 
             // if the node is visible, insert in a node
             if (!node.isTombstone) {
-                var treeEnd = new BBT.BalancedBinaryTree(end, null, node.idTree.rightChild, null);
+                var treeEnd = new bbt.BalancedBinaryTree(end, null, node.idTree.rightChild, null);
                 node.idTree.rep = node;
                 node.idTree.rightChild = treeEnd;
                 treeEnd.parent = node;
@@ -175,7 +178,7 @@ RSTReplica.prototype = {
         }
 
         // TODO is null case here taken care of?
-        newTree = new RSTNode.RSTNode(nodeNew, null, null);
+        newTree = new bbt.BalancedBinaryTree(nodeNew, null, null, null);
 
         var rootIsNull = this.root === null;
         if (rootIsNull || (newNode !== null && newNode === this.head)) {
@@ -212,7 +215,7 @@ RSTReplica.prototype = {
 
         newTree = newTree.parent;
         while (newTree !== null) {
-            newTree.size += nodeNew.length;
+            newTree.length += nodeNew.length;
             newTree = newTree.parent;
         }
     },
@@ -309,6 +312,13 @@ RSTReplica.prototype = {
             treeNode = treeNode.rightChild;
         }
         treeNode.length += i;
+    },
+    toString: function () {
+        if (this.root === null) {
+            return "";
+        } else {
+            return this.root.toString();
+        }
     }
 }
 

@@ -6,7 +6,7 @@ const RSTNode = require('./RSTNode');
 
 
 // intuitively this wrapers the replica and performs the necessary insortion/deletion logic
-function RSTWrapper(replica, sid, replicaNum) {
+function RSTWrapper(replica, sid) {
     this.replica = replica;
     // sid aka replica number
     this.sid = sid;
@@ -17,7 +17,7 @@ RSTWrapper.prototype = {
     // apply sequence operation to local replica
     // op: SeqOp
     // returns list of RSTops to broadcast to replicas
-    applyLocal = function (op) {
+    applyLocal: function (op) {
         // TODO deal with other cases
         switch (ops.opType) {
             case Ops.opEnum.INSERT_OP:
@@ -125,8 +125,15 @@ RSTWrapper.prototype = {
             this.siteVC.mapping[id] = 1;
         }
         // TODO
-    }
+    },
+    toString: function () {
+        return this.replica.toString();
 
+    },
+    toStringDebug: function () {
+        // TODO include more than just the contents (e.g. all metadata)
+
+    }
 }
 
 

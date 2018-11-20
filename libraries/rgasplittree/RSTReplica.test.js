@@ -16,6 +16,11 @@ test("testing RSTReplica constructor", () => {
     expect(rep.size).toBe(0);
 })
 
+test("testing RSTReplica toString method on empty replica", () => {
+    var rep = new replica.RSTReplica();
+    expect(rep.toString()).toEqual("");
+});
+
 // position tests
 test("testing Position constructor", () => {
     var pos = new replica.Position(null, 5);
@@ -32,6 +37,17 @@ test("testing Position toString method", () => {
     );
 });
 
+test("testing insertIntoLocalTree", () => {
+
+});
+
 test("testing hashmapEquals method", () => {
     // TODO im lazy I don't wanna construct nodes
 });
+
+
+// to aid in testing, constructs an example tree
+// TODO
+function constructTree() {
+
+}

@@ -8,4 +8,9 @@ test('Testing constructor null rep', () => {
     expect(test.parent).toBeNull();
 });
 
+test('Testing tostring null tree', () => {
+    var test = new bbt.BalancedBinaryTree(null, null, null, null);
+    expect(test.toString()).toBe("");
+});
+
 // TODO non-null test

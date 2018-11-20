@@ -30,6 +30,22 @@ function BalancedBinaryTree(rep, leftChild, rightChild, parent) {
 
 }
 
+BalancedBinaryTree.prototype = {
+    toString: function () {
+        rVal = "";
+        if (this.leftChild !== null) {
+            rVal += this.leftChild.toString();
+        }
+        if (this.rep !== null) {
+            rVal += this.rep.getContents();
+        }
+        if (this.rightChild !== null) {
+            rVal += this.rightChild.toString()
+        }
+        return rVal;
+    }
+}
+
 module.exports = {
     BalancedBinaryTree
 }
