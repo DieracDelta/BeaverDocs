@@ -14,7 +14,7 @@ function RSTReplica() {
 
 RSTReplica.prototype = {
     // op: remote RSTOp to apply to local replica
-    // returns success
+    // returns boolean indicating success
     apply: function (op) {
         switch (op.opType) {
             case RSTOp.opEnum.DELETE_OP:
@@ -27,6 +27,8 @@ RSTReplica.prototype = {
                 return false;
         }
     },
+    // op: remote RSTOp to apply to local replica
+    // returns boolean indicating success
     remoteInsert: function (op) {
         var insNode = new RSTNode(op.vTomb, op.contents, null, null, false, null)
         var refNode, nextNode, refTree;

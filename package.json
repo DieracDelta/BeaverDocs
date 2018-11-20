@@ -5,6 +5,7 @@
     "babel-cli": "^6.26.0",
     "browserify": "^16.2.3",
     "express": "^4.16.4",
+    "hashmap": "^2.3.0",
     "jest": "^23.6.0",
     "nanoid": "^2.0.0",
     "peer": "^0.2.10",

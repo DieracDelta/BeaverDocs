@@ -2,7 +2,7 @@ const s3vector = require('../vectorclock/s3vector');
 
 
 // key: s3vector key in dictionary between keys and objects 
-// content: the list of elements
+// content: the list of elements (characters)
 // nextLink: pointer to next node in rga linked list
 // offset: offset of node within node originally inserted by user
 // splitLink: node containing next part of block
@@ -32,6 +32,7 @@ RSTNode.prototype = {
             return "RIP";
         }
     },
+    // delete should kill a node
     kill: function () {
         // null everything out
         this.isTombstone = true;
