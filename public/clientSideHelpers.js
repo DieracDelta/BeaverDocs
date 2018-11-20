@@ -40,6 +40,11 @@ function PeerWrapper(editor) {
     this.peerColors = {};
     document.getElementById('user-dot').style.backgroundColor = this.color;
 
+    // peers viewed
+    // {
+    //  peerId: timestamp,
+    //  ...
+    // }
     this.view = {};
     this.viewSize = 2; // how many of the most recently seen peers to keep after a merge
     this.viewTimeInterval = 1000; // milliseconds
@@ -77,7 +82,7 @@ PeerWrapper.prototype = {
             }
         }
     },
-    connect: function (id) {
+    connect: function(id) {
         console.log(this.directlyConnectedPeers)
         if (id in this.directlyConnectedPeers) {
             console.log("CLOSE");
@@ -96,21 +101,22 @@ PeerWrapper.prototype = {
             document.getElementById('icon-peer-list').innerHTML += '<button class="btn-peer" style="border-left: 1.5em solid ' + colorList[Math.floor(Math.random() * colorList.length)] + '">' + allKeys[i] + '</button>';
         }
     },
-    broadcast: function (data) {
+    broadcast: function(data) {
         for (apeerID of Object.keys(this.directlyConnectedPeers)) {
             console.log("broadcasting" + JSON.stringify(data))
             // TODO does this need to be stringified
+            console.log(this.directlyConnectedPeers[apeerID].open);
             this.directlyConnectedPeers[apeerID].send(data);
         }
     },
-    relay: function (fromPeer, data) {
+    relay: function(fromPeer, data) {
         for (apeerId of Object.keys(this.directlyConnectedPeers)) {
             if (apeerId !== fromPeer) {
                 this.directlyConnectedPeers[apeerID].send(JSON.stringify(data));
             }
         }
     },
-    addConnectionListeners: function (conn, id) {
+    addConnectionListeners: function(conn, id) {
         conn.on('open', () => {
             /* TODO: Why do we need this?
             if (id in this.directlyConnectedPeers) {
@@ -265,3 +271,4 @@ module.exports = {
     PeerWrapper,
     MessageType
 };
+
