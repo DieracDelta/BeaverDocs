@@ -3,3 +3,4 @@ build/
 public/bundle.js
 coverage/
 package-lock.js
+.DS_Store
