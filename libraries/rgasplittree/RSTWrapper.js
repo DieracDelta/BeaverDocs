@@ -27,7 +27,6 @@ RSTWrapper.prototype = {
             default:
                 return null;
         }
-
     },
     // takes a sequence operation to apply to local replica
     // returns a list of RSTOps to broadcast to remote replicas

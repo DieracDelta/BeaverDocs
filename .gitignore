@@ -2,3 +2,4 @@ node_modules/
 build/
 public/bundle.js
 coverage/
+package-lock.js

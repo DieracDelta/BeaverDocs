@@ -2,14 +2,14 @@ const s3vector = require('../vectorclock/s3vector');
 const RSTNode = require('./RSTNode');
 const RSTOp = require('../opTypes/Ops');
 const BBT = require('../trees/balancedbinary');
+const hashmap = require('../../node_modules/hashmap/hashmap');
 
 function RSTReplica() {
     // TODO create your own version of dictionary that hashes s3vectors -> nodes
-    this.dict = {};
+    this.dict = new hashmap.HashMap();
     this.head = new RSTNode.RSTNode(null, null, null, null, true, null);
     this.root = null
     this.size = 0;
-
 }
 
 RSTReplica.prototype = {
@@ -37,7 +37,7 @@ RSTReplica.prototype = {
             refNode = head;
         } else {
             var netOffset = op.offsetStart + op.vPos.offset;
-            refNode = getSuitableNode(this.dict[op.vPos.hash()], netOffset);
+            refNode = getSuitableNode(this.dict.get(op.vPos.hash()), netOffset);
             remoteSplit(node, offsetAbs);
         }
 
@@ -57,7 +57,7 @@ RSTReplica.prototype = {
 
         insNode.nextLink = nextNode;
         refNode.nextLink = insNode;
-        this.dict[op.vTomb.hash()] = insNode;
+        this.dict.set(op.vTomb.hash(), insNode);
         this.size += insNode.length;
     },
     // perform remote delete
@@ -67,7 +67,7 @@ RSTReplica.prototype = {
         var offsetEndRel = op.offsetEnd + op.vPos.offset;
         var offsetEndAbs = op.offsetEnd;
 
-        var delNode = this.dict[op.vPos.hash(op.vPos.hash())];
+        var delNode = this.dict.get(op.vPos.hash(op.vPos.hash()));
         delNode = getSuitableNode(delNode, offsetStartAbs);
 
         if (offsetStartRel > 0) {
@@ -118,8 +118,8 @@ RSTReplica.prototype = {
 
 
             // TODO are we hashing on key or node?
-            this.dict[node.key.hash()] = node;
-            this.dict[end.key.hash()] = end;
+            this.dict.set(node.key.hash(), node);
+            this.dict.set(end.key.hash(), end);
 
             // if the node is visible, insert in a node
             if (!node.isTombstone) {
@@ -320,13 +320,38 @@ function Position(node, offset) {
 Position.prototype = {
     toString: function () {
         return "\tnode: " +
-            this.node.toString() + "\n\toffset: " +
-            this.offset.toString() + "\n";
+            ((this.node === null) ? "null" : this.node.toString()) +
+            "\n\toffset: " + this.offset.toString() + "\n";
     }
 
 }
 
+function hashmapEquals(a, b) {
+    var alen = a.size;
+    var blen = b.size;
+    if (alen !== blen) {
+        return false;
+    }
+
+    var akeys = a.keys().sort((a, b) => {
+        return a - b;
+    });
+    var bkeys = b.keys().sort((a, b) => {
+        return a - b;
+    });
+
+    for (i = 0; i < alen; i++) {
+        if (!RSTNode.equal(akeys[i], bkeys[i])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
 module.exports = {
     RSTReplica,
-    Position
+    Position,
+    hashmapEquals
 }

@@ -58,11 +58,20 @@ RSTNode.prototype = {
     },
     hash: function () {
         return 267 + ((this.key !== null) ? this.key.hash() : 0);
+    },
+    toString: function () {
+        return `\tNode with:\n\t\tkey:${kv}\n\t\tcontent:${this.content}\
+            \n\t\tnext link: ${this.nextLink}\n\t\tsplit link:${this.splitLink}
+            \n\t\tis tombstone:${this.isTombstone}\n\t\t${this.idTree}\
+            \n\t\tlength:${this.length}\n`;
     }
 }
 
 // are nodes a and b equal?
 function equal(a, b) {
+    if (a === null) {
+        return b === null;
+    }
     if (a.key === null) {
         if (b.key === null) {
             return true;
