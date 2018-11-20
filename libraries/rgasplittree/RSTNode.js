@@ -17,7 +17,11 @@ function RSTNode(key, content, nextLink, splitLink, isTombstone, idTree) {
     this.isTombstone = isTombstone;
     this.idTree = idTree;
     // don't need to pass length in since we can get it from content
-    this.length = this.content.length;
+    if (this.content !== null) {
+        this.length = this.content.length;
+    } else {
+        this.length = -1;
+    }
 }
 
 RSTNode.prototype = {

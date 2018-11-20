@@ -46,3 +46,23 @@ test('Testing s3v equals', () => {
     test2.sid = 0;
     expect(s3v.equal(test1, test2)).toBe(true);
 })
+
+test('Testing s3v toString', () => {
+    var vecClock = new vc.VectorClock([]);
+    vecClock.mapping[0] = 5;
+    vecClock.mapping[1] = 10
+    vecClock.mapping[2] = 300;
+    var test = new s3v.s3Vector(vecClock, 20, 0);
+    var resultVal = "S3 Vector with \n\tsum:315\
+            \n\tsid:0\n\toffset:20";
+    expect(test.toString()).toBe(resultVal);
+});
+
+test('Testing s3v hash function', () => {
+    var vecClock = new vc.VectorClock([]);
+    vecClock.mapping[0] = 5;
+    vecClock.mapping[1] = 10
+    vecClock.mapping[2] = 300;
+    var test = new s3v.s3Vector(vecClock, 20, 1);
+    expect(test.hash()).toBe(1510263);
+});

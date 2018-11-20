@@ -19,13 +19,15 @@ var s3Vector = function (vClock, offset, sid) {
 s3Vector.prototype = {
     // TODO
     toString() {
-        return "";
+        return `S3 Vector with \n\tsum:${this.sum}\
+            \n\tsid:${this.sid}\n\toffset:${this.offset}`;
     },
     hash() {
         var rVal = 3;
         rVal = 79 * rVal + this.sid;
         rVal = 79 * rVal + this.sum;
         rVal = 79 * rVal + this.offset;
+        return rVal;
     }
 }
 
