@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for vectorclock/vectorClock.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">All files</a> / <a href="index.html">vectorclock</a> vectorClock.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">44.74% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>17/38</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">27.78% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>5/18</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">71.43% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>5/7</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">44.74% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>17/38</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// implementation based on
+// https://www.cs.rutgers.edu/~pxk/417/notes/clocks/index.html
+&nbsp;
+// ids is a vector of current ids (including node's id)
+function VectorClock(ids) {
+    this.mapping = {};
+    for (var id of ids) {
+        this.mapping[id] = 0;
+    }
+}
+&nbsp;
+VectorClock.prototype = {
+    // process a received VectorClock event
+    // modifies in place the mapping
+    processVector: function (otherVClock) {
+        for (var otherId in otherVClock.mapping) {
+            <span class="missing-if-branch" title="if path not taken" >I</span>if (otherId in this.mapping) {
+<span class="cstat-no" title="statement not covered" >                if (this.mapping[otherId] &lt; otherVClock.mapping[otherId]) {</span>
+<span class="cstat-no" title="statement not covered" >                    this.mapping[otherId] = otherVClock.mapping[otherId];</span>
+                }
+&nbsp;
+            } else {
+                this.mapping[otherId] = otherVClock.mapping[otherId];
+            }
+        }
+    },
+    getSafe: function (id) {
+        if (id in this.mapping) {
+            return this.mapping[id];
+        } else {
+            // TODO should I add this to mapping
+            return 0;
+        }
+    },
+    // increment local vector
+    increment: function (id) {
+        if (id in this.mapping) {
+            this.mapping[id]++;
+        } else {
+            this.mapping[id] = 1;
+        }
+    },
+    // TODO
+    // returns a deep copy of the current vector
+    deepCopy: function () {
+        var rVal = new VectorClock([]);
+        rVal.processVector(this);
+        return rVal;
+    }
+&nbsp;
+}
+&nbsp;
+// are the two vectorclocks concurrent?
+function <span class="fstat-no" title="function not covered" >isConcurrent(</span>vector1, vector2) {
+<span class="cstat-no" title="statement not covered" >    greater = false;</span>
+<span class="cstat-no" title="statement not covered" >    less = false;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    allKeys = union(new Set(Object.keys(vector1.mapping)), new Set(Object.keys(vector2.mapping)));</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    for (var akey of allKeys) {</span>
+        var v1val = <span class="cstat-no" title="statement not covered" >0;</span>
+        var v2val = <span class="cstat-no" title="statement not covered" >0;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (akey in vector1.mapping) {</span>
+<span class="cstat-no" title="statement not covered" >            v1val = vector1.mapping[akey];</span>
+        }
+<span class="cstat-no" title="statement not covered" >        if (akey in vector2.mapping) {</span>
+<span class="cstat-no" title="statement not covered" >            v2val = vector1.mapping[akey];</span>
+        }
+<span class="cstat-no" title="statement not covered" >        if (v1val &gt; v2val) {</span>
+<span class="cstat-no" title="statement not covered" >            greater = true;</span>
+        } else <span class="cstat-no" title="statement not covered" >if (v1val &lt; v2val) {</span>
+<span class="cstat-no" title="statement not covered" >            greater = false;</span>
+        }
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return greater &amp;&amp; less</span>
+}
+&nbsp;
+&nbsp;
+// set union copied off stack overflow
+function <span class="fstat-no" title="function not covered" >union(</span>setA, setB) {
+    var _union = <span class="cstat-no" title="statement not covered" >new Set(setA);</span>
+<span class="cstat-no" title="statement not covered" >    for (var elem of setB) {</span>
+<span class="cstat-no" title="statement not covered" >        _union.add(elem);</span>
+    }
+<span class="cstat-no" title="statement not covered" >    return _union;</span>
+}
+&nbsp;
+module.exports = {
+    VectorClock,
+    isConcurrent
+};</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Mon Nov 19 2018 19:35:49 GMT-0500 (EST)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
