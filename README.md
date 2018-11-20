@@ -8,7 +8,7 @@ how to start the central server that brokers connections between servers. The se
 
 ```
 npm install
-npm run-script run
+npm run start
 ```
 
 How to run tests on our rga split tree crdt and the data structures it uses:
