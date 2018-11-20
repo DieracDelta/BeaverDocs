@@ -46,6 +46,12 @@ function SeqOp(opType, contents, pos, arg) {
     this.arg = arg;
 }
 
+SeqOp.prototype = {
+    deepCopy: function () {
+        return new SeqOp(this.opType, this.contents.slice(), this.pos, this.arg);
+    }
+}
+
 // TODO move these outside SeqOp
 // TODO implement the rest of the operations
 // integer position

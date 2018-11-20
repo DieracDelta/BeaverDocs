@@ -128,11 +128,9 @@ RSTWrapper.prototype = {
     },
     toString: function () {
         return this.replica.toString();
-
     },
     toStringDebug: function () {
         // TODO include more than just the contents (e.g. all metadata)
-
     }
 }
 

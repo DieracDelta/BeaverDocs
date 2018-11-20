@@ -39,8 +39,8 @@ RSTReplica.prototype = {
             refNode = this.head;
         } else {
             var netOffset = op.offsetStart + op.vPos.offset;
-            refNode = getSuitableNode(this.dict.get(op.vPos.hash()), netOffset);
-            remoteSplit(node, offsetAbs);
+            refNode = this.getSuitableNode(this.dict.get(op.vPos.hash()), netOffset);
+            this.remoteSplit(refNode, netOffset);
         }
 
         nextNode = refNode.nextLink;
@@ -115,7 +115,7 @@ RSTReplica.prototype = {
             end.length = offset - node.key.offset;
 
             node.content = a;
-            node.size = offset - node.key.offset;
+            node.length = offset - node.key.offset;
             node.nextLink = end;
             node.splitLink = end;
 
@@ -149,24 +149,24 @@ RSTReplica.prototype = {
             return new Position(null, 0);
         } else if (pos >= this.size) {
             // TODO implement
-            tree = findMostRight(tree, 0);
+            tree = this.findMostRight(tree, 0);
             return new Position(tree.rep, tree.rep.length);
         } else {
             while (
-                !(tree.size - ((tree.rightChild === null) ? 0 : tree.rightChild.size) - tree.rep.length < pos &&
-                    pos <= tree.size - ((tree.rightChild === null) ? 0 : tree.rightChild.size)
+                !(tree.length - ((tree.rightChild === null) ? 0 : tree.rightChild.length) - tree.rep.length < pos &&
+                    pos <= tree.length - ((tree.rightChild === null) ? 0 : tree.rightChild.length)
                 )
             ) {
-                if (pos <= tree.size - ((tree.rightChild === null) ? 0 : tree.rightChild.size) - tree.rep.length) {
+                if (pos <= tree.length - ((tree.rightChild === null) ? 0 : tree.rightChild.length) - tree.rep.length) {
                     tree = tree.leftChild;
                 } else {
-                    pos -= ((tree.leftChild === null) ? 0 : tree.leftChild.size) + tree.rep.length;
-                    tree = tree.rightChild();
+                    pos -= ((tree.leftChild === null) ? 0 : tree.leftChild.length) + tree.rep.length;
+                    tree = tree.rightChild;
                 }
             }
 
             return new Position(tree.rep, pos -
-                tree.size + ((tree.rightChild === null) ? 0 : tree.rightChild.size) +
+                tree.length + ((tree.rightChild === null) ? 0 : tree.rightChild.length) +
                 tree.rep.length);
         }
     },
@@ -181,7 +181,7 @@ RSTReplica.prototype = {
         newTree = new bbt.BalancedBinaryTree(nodeNew, null, null, null);
 
         var rootIsNull = this.root === null;
-        if (rootIsNull || (newNode !== null && newNode === this.head)) {
+        if (rootIsNull || (nodeNew !== null && nodeNew === this.head)) {
             if (rootIsNull) {
                 this.root = newTree;
             } else if (this.root.leftChild === null) {
@@ -197,7 +197,7 @@ RSTReplica.prototype = {
                 }
             }
         } else if (nodeOld === null) {
-            var mostRight = findMostRight(this.root, 0);
+            var mostRight = this.findMostRight(this.root, 0);
             mostRight.rightChild = newTree;
             if (newTree !== null) {
                 newTree.parent = mostRight;
@@ -207,7 +207,7 @@ RSTReplica.prototype = {
                 tree.leftChild = newTree;
                 newTree.parent = tree;
             } else {
-                var mostRight = findMostRight(tree.leftChild, 0);
+                var mostRight = this.findMostRight(tree.leftChild, 0);
                 mostRight.rightChild = newTree;
                 newTree.parent = mostRight;
             }
@@ -304,6 +304,7 @@ RSTReplica.prototype = {
             treeNode = treeNode.leftChild;
         }
         treeNode.length += i;
+        return treeNode;
     },
     findMostRight: function (treeRoot, i) {
         var treeNode = treeRoot;
@@ -312,6 +313,7 @@ RSTReplica.prototype = {
             treeNode = treeNode.rightChild;
         }
         treeNode.length += i;
+        return treeNode;
     },
     toString: function () {
         if (this.root === null) {
