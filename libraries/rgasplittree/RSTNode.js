@@ -61,10 +61,20 @@ RSTNode.prototype = {
         return 267 + ((this.key !== null) ? this.key.hash() : 0);
     },
     toString: function () {
-        return `\tNode with:\n\t\tkey:${kv}\n\t\tcontent:${this.content}\
+        return `\tNode with:\n\t\tkey:${this.key}\n\t\tcontent:${this.content}\
             \n\t\tnext link: ${this.nextLink}\n\t\tsplit link:${this.splitLink}
             \n\t\tis tombstone:${this.isTombstone}\n\t\t${this.idTree}\
             \n\t\tlength:${this.length}\n`;
+    },
+    getOffset: function () {
+        if (this.key === null) {
+            return 0;
+        } else {
+            return this.key.offset;
+        }
+    },
+    printType: function () {
+        return "Node";
     }
 }
 
@@ -83,7 +93,7 @@ function equal(a, b) {
     if (b.key === null) {
         return false;
     }
-    return s3vector.equals(a.key, b.key)
+    return s3vector.equal(a.key, b.key)
 }
 
 module.exports = {

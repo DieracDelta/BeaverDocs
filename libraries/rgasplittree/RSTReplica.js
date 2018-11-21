@@ -67,20 +67,22 @@ RSTReplica.prototype = {
     remoteDelete: function (op) {
         var offsetStartAbs = op.offsetStart + op.vPos.offset - 1;
         var offsetStartRel = op.offsetStart - 1;
-        var offsetEndRel = op.offsetEnd + op.vPos.offset;
-        var offsetEndAbs = op.offsetEnd;
+        var offsetEndAbs = op.offsetEnd + op.vPos.offset;
+        var offsetEndRel = op.offsetEnd;
 
-        var delNode = this.dict.get(op.vPos.hash(op.vPos.hash()));
-        delNode = getSuitableNode(delNode, offsetStartAbs);
+        var delNode = this.dict.get(op.vPos.hash());
+        delNode = this.getSuitableNode(delNode, offsetStartAbs);
+        // console.log("YEET" + delNode + "YEET");
 
+        // console.log("relative offset" + offsetStartRel);
         if (offsetStartRel > 0) {
             this.remoteSplit(delNode, offsetStartAbs);
             delNode = delNode.splitLink;
         }
-
-        while (delNode.key.offset + delNode.length < offsetEndAbs) {
+        while (delNode.getOffset() + delNode.length < offsetEndAbs) {
             if (!delNode.isTombstone) {
                 this.size -= delNode.length;
+                // console.log("shiyut");
                 this.deleteInLocalTree(delNode);
             }
             delNode.kill();
@@ -105,10 +107,13 @@ RSTReplica.prototype = {
             var b = [];
 
             if (!node.isTombstone) {
-                a = node.contents.slice(0, offset - node.key.offset);
-                b = node.contents.slice(offset - node.key.offset, node.length);
+                // console.log(node);
+                a = node.content.slice(0, offset - node.key.offset);
+                b = node.content.slice(offset - node.key.offset, node.length);
+                console.log("a: " + a);
+                console.log("b: " + b);
             }
-            var temp = s3vector.s3Vector(null, offset, node.key.sid);
+            var temp = new s3vector.s3Vector(null, offset, node.key.sid);
             temp.sum = node.key.sum;
             end = new RSTNode.RSTNode(temp, b, node.nextLink, node.splitLink, node.isTombstone, node.idTree);
             // redundant?
@@ -235,19 +240,21 @@ RSTReplica.prototype = {
                 isLeftChild = false;
                 // TODO should actually test for equality by value, not just by reference
             } else if (parent.leftChild === tree) {
-                isLeftSon = true;
+                isLeftChild = true;
             }
         }
+
+        console.log("PARENT" + parent.printType());
 
         if (isRoot) {
             if (isLeaf) {
                 this.root = null;
             } else if (hasLeftChild && !hasRightChild) {
                 this.root = this.root.leftChild;
-            } else if (!hasLeftSon && hasRightSon) {
+            } else if (!hasLeftChild && hasRightChild) {
                 this.root = this.root.rightChild;
             } else {
-                var leftMost = findMostLeft(tree.rightChild, this.root.leftChild.length)
+                var leftMost = this.findMostLeft(tree.rightChild, this.root.leftChild.length)
                 leftMost.leftChild = this.root.leftChild;
             }
         } else if (isLeaf) {
@@ -275,7 +282,7 @@ RSTReplica.prototype = {
                     tree.rightChild.parent = parent;
                 }
             } else {
-                var mostLeft = findMostLeft(tree.rightChild, tree.leftChild.length);
+                var mostLeft = this.findMostLeft(tree.rightChild, tree.leftChild.length);
                 mostLeft.leftChild = tree.leftChild;
                 tree.leftChild.parent = mostLeft;
                 if (isLeftChild) {
@@ -290,6 +297,7 @@ RSTReplica.prototype = {
 
         // remove the length from everything
         while (parent !== null) {
+            console.log(parent.printType());
             parent.length -= nodeToDelete.length;
             parent = parent.parent;
         }

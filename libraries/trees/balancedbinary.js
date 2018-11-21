@@ -43,6 +43,47 @@ BalancedBinaryTree.prototype = {
             rVal += this.rightChild.toString()
         }
         return rVal;
+    },
+    printType: function () {
+        return "tree node";
+    },
+    // adapted from https://gist.github.com/subeeshb/dd338088ab04607b18a1
+    // prints the subtree starting at this node to stdout
+    prettyPrint: function () {
+        var _printNodes = function (levels) {
+            for (var i = 0; i < levels.length; i++) {
+                var spacerSize = Math.ceil(40 / ((i + 2) * 2));
+                var spacer = (new Array(spacerSize + 1).join('  '));
+                var lines = levels[i].map(function (val, index) {
+                    return (index % 2 === 0) ? ' /' : '\\ ';
+                });
+                levels[i].unshift('');
+                lines.unshift('');
+                if (i > 0) {
+                    console.log(lines.join(spacer));
+                }
+                console.log(levels[i].join(spacer));
+            }
+        };
+
+        var _extractNodes = function (node, depth, levels) {
+            //traverse left branch
+            if (!!node.leftChild) {
+                levels = _extractNodes(node.leftChild, depth + 1, levels);
+            }
+
+            levels[depth] = levels[depth] || [];
+            levels[depth].push("n");
+
+            //traverse right branch
+            if (!!node.rightChild) {
+                levels = _extractNodes(node.rightChild, depth + 1, levels);
+            }
+
+            return levels;
+        };
+        var levels = _extractNodes(this, 0, []);
+        _printNodes(levels);
     }
 }
 
