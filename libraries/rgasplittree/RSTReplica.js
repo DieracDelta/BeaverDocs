@@ -3,6 +3,7 @@ const RSTNode = require('./RSTNode');
 const RSTOp = require('../opTypes/Ops');
 const bbt = require('../trees/balancedbinary');
 const hashmap = require('../../node_modules/hashmap/hashmap');
+const assertion = require('../assertions');
 
 function RSTReplica() {
     // TODO create your own version of dictionary that hashes s3vectors -> nodes
@@ -71,18 +72,18 @@ RSTReplica.prototype = {
         var offsetEndRel = op.offsetEnd;
 
         var delNode = this.dict.get(op.vPos.hash());
+        assertion.assert(delNode.printType(), "node");
         delNode = this.getSuitableNode(delNode, offsetStartAbs);
-        // console.log("YEET" + delNode + "YEET");
+        assertion.assert(delNode.printType(), "node");
 
-        // console.log("relative offset" + offsetStartRel);
         if (offsetStartRel > 0) {
             this.remoteSplit(delNode, offsetStartAbs);
             delNode = delNode.splitLink;
         }
+        assertion.assert(delNode.printType(), "node");
         while (delNode.getOffset() + delNode.length < offsetEndAbs) {
             if (!delNode.isTombstone) {
                 this.size -= delNode.length;
-                // console.log("shiyut");
                 this.deleteInLocalTree(delNode);
             }
             delNode.kill();
@@ -101,13 +102,13 @@ RSTReplica.prototype = {
     // perform remote split, given node and offset
     // TODO need to go through and replace key.offset with conditional if the key is null
     remoteSplit: function (node, offset) {
+        assertion.assert(node.printType(), "node");
         var end = null;
         if (offset - node.key.offset > 0 && node.length - offset + node.key.offset > 0) {
             var a = [];
             var b = [];
 
             if (!node.isTombstone) {
-                // console.log(node);
                 a = node.content.slice(0, offset - node.key.offset);
                 b = node.content.slice(offset - node.key.offset, node.length);
                 console.log("a: " + a);
@@ -134,7 +135,7 @@ RSTReplica.prototype = {
                 var treeEnd = new bbt.BalancedBinaryTree(end, null, node.idTree.rightChild, null);
                 node.idTree.rep = node;
                 node.idTree.rightChild = treeEnd;
-                treeEnd.parent = node;
+                treeEnd.parent = node.idTree;
             }
         }
     },
@@ -226,6 +227,7 @@ RSTReplica.prototype = {
     },
     deleteInLocalTree: function (nodeToDelete) {
         var tree = nodeToDelete.idTree;
+        assertion.assert(tree.printType(), "tree node");
         var parent = null;
         var isRoot = tree === this.root;
         var hasRightChild = tree.rightChild !== null;
@@ -235,6 +237,9 @@ RSTReplica.prototype = {
 
         if (!isRoot) {
             parent = tree.parent;
+            console.log(tree.prettyPrint());
+            console.log(tree.printType());
+            assertion.assert(parent.printType(), "tree node");
             // TODO wtf is this logic makes zero sense
             if (parent.leftChild === null) {
                 isLeftChild = false;
@@ -244,7 +249,6 @@ RSTReplica.prototype = {
             }
         }
 
-        console.log("PARENT" + parent.printType());
 
         if (isRoot) {
             if (isLeaf) {
@@ -255,6 +259,7 @@ RSTReplica.prototype = {
                 this.root = this.root.rightChild;
             } else {
                 var leftMost = this.findMostLeft(tree.rightChild, this.root.leftChild.length)
+                assertion.assert(leftMost.printType(), "tree node");
                 leftMost.leftChild = this.root.leftChild;
             }
         } else if (isLeaf) {
@@ -283,6 +288,7 @@ RSTReplica.prototype = {
                 }
             } else {
                 var mostLeft = this.findMostLeft(tree.rightChild, tree.leftChild.length);
+                assertion.assert(leftMost.printType(), "tree node");
                 mostLeft.leftChild = tree.leftChild;
                 tree.leftChild.parent = mostLeft;
                 if (isLeftChild) {
@@ -294,10 +300,12 @@ RSTReplica.prototype = {
                 }
             }
         }
+        assertion.assert(parent.printType(), "tree node");
+        console.log(parent.printType());
 
         // remove the length from everything
         while (parent !== null) {
-            console.log(parent.printType());
+            console.log("hi!")
             parent.length -= nodeToDelete.length;
             parent = parent.parent;
         }

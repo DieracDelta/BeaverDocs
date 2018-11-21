@@ -47,7 +47,6 @@ BalancedBinaryTree.prototype = {
     printType: function () {
         return "tree node";
     },
-    // adapted from https://gist.github.com/subeeshb/dd338088ab04607b18a1
     // prints the subtree starting at this node to stdout
     prettyPrint: function () {
         // list of lists of nodes (one list for each level)
@@ -81,7 +80,6 @@ BalancedBinaryTree.prototype = {
         levels.reverse()
         // allow 5 things for each character
         var total_width = levels[0].length;
-        var level_list = []
         var rVal = "";
         for (var i of levels) {
             node_width = 10 * total_width / i.length; // five characters per furthest down node

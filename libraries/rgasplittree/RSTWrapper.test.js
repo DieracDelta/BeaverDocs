@@ -50,14 +50,12 @@ test("testing RSTWrapper local operations", () => {
     expect(test.replica.root.rightChild.parent.printType()).toBe("tree node");
     expect(test.replica.root.rightChild.parent).toBe(test.replica.root);
     expect(test.replica.root.rightChild.leftChild.printType()).toBe("tree node");
-    console.log(test.replica.root.prettyPrint());
-    // expect(test.replica.root.leftChild.leftChild.parent)
-    //     .toBe(test.replica.root.leftChild);
+    // console.log(test.replica.root.prettyPrint());
+    expect(test.replica.root.rightChild.leftChild.parent).toBe(test.replica.root.rightChild);
     // local DELETE ONLY ops
-    // expect(test.replica.root)
 
 
 
-    // var deleteOp1 = new ops.SeqOp(ops.opEnum.DELETE_OP, null, 3, 5);
-    // test.localDelete(deleteOp1);
+    var deleteOp1 = new ops.SeqOp(ops.opEnum.DELETE_OP, null, 3, 5);
+    test.localDelete(deleteOp1);
 });

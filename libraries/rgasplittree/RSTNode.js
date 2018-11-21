@@ -74,7 +74,7 @@ RSTNode.prototype = {
         }
     },
     printType: function () {
-        return "Node";
+        return "node";
     }
 }
 
