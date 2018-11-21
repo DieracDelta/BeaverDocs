@@ -49,7 +49,7 @@ test("testing RSTWrapper local operations", () => {
     expect(test.replica.root.leftChild.parent).toBe(test.replica.root);
     expect(test.replica.root.rightChild.parent.printType()).toBe("tree node");
     expect(test.replica.root.rightChild.parent).toBe(test.replica.root);
-    test.replica.root.prettyPrint()
+    console.log(test.replica.root.prettyPrint());
     // local DELETE ONLY ops
     // expect(test.replica.root)
 

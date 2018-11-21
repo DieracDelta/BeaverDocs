@@ -51,6 +51,7 @@ BalancedBinaryTree.prototype = {
     // prints the subtree starting at this node to stdout
     prettyPrint: function () {
         var _printNodes = function (levels) {
+            rVal = "";
             for (var i = 0; i < levels.length; i++) {
                 var spacerSize = Math.ceil(40 / ((i + 2) * 2));
                 var spacer = (new Array(spacerSize + 1).join('  '));
@@ -60,10 +61,11 @@ BalancedBinaryTree.prototype = {
                 levels[i].unshift('');
                 lines.unshift('');
                 if (i > 0) {
-                    console.log(lines.join(spacer));
+                    rVal += lines.join(spacer) + "\n";
                 }
-                console.log(levels[i].join(spacer));
+                rVal += levels[i].join(spacer) + "\n";
             }
+            return rVal;
         };
 
         var _extractNodes = function (node, depth, levels) {
@@ -73,7 +75,11 @@ BalancedBinaryTree.prototype = {
             }
 
             levels[depth] = levels[depth] || [];
-            levels[depth].push("n");
+            if (node.rep.isTombstone) {
+                levels[depth].push("RIP");
+            } else {
+                levels[depth].push("LIVE");
+            }
 
             //traverse right branch
             if (!!node.rightChild) {
@@ -83,7 +89,7 @@ BalancedBinaryTree.prototype = {
             return levels;
         };
         var levels = _extractNodes(this, 0, []);
-        _printNodes(levels);
+        return _printNodes(levels);
     }
 }
 
