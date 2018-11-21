@@ -50,46 +50,64 @@ BalancedBinaryTree.prototype = {
     // adapted from https://gist.github.com/subeeshb/dd338088ab04607b18a1
     // prints the subtree starting at this node to stdout
     prettyPrint: function () {
-        var _printNodes = function (levels) {
-            rVal = "";
-            for (var i = 0; i < levels.length; i++) {
-                var spacerSize = Math.ceil(40 / ((i + 2) * 2));
-                var spacer = (new Array(spacerSize + 1).join('  '));
-                var lines = levels[i].map(function (val, index) {
-                    return (index % 2 === 0) ? ' /' : '\\ ';
-                });
-                levels[i].unshift('');
-                lines.unshift('');
-                if (i > 0) {
-                    rVal += lines.join(spacer) + "\n";
+        // list of lists of nodes (one list for each level)
+        var levels = [
+            [this]
+        ];
+        var i = 0;
+        var shouldContinue = true;
+        while (shouldContinue) {
+            shouldContinue = false;
+            cur_level_nodes = levels[i];
+            next_level_nodes = [];
+            for (j = 0; j < 2 * cur_level_nodes.length; j++) {
+                next_level_nodes.push(null);
+            }
+            for (j = 0; j < cur_level_nodes.length; j++) {
+                if (cur_level_nodes[j] !== null) {
+                    if (cur_level_nodes[j].leftChild !== null) {
+                        shouldContinue = true;
+                        next_level_nodes[2 * j] = cur_level_nodes[j].leftChild;
+                    }
+                    if (cur_level_nodes[j].rightChild !== null) {
+                        shouldContinue = true;
+                        next_level_nodes[2 * j + 1] = cur_level_nodes[j].rightChild;
+                    }
                 }
-                rVal += levels[i].join(spacer) + "\n";
             }
-            return rVal;
-        };
-
-        var _extractNodes = function (node, depth, levels) {
-            //traverse left branch
-            if (!!node.leftChild) {
-                levels = _extractNodes(node.leftChild, depth + 1, levels);
+            levels.push(next_level_nodes);
+            i++;
+        }
+        levels.reverse()
+        // allow 5 things for each character
+        var total_width = levels[0].length;
+        var level_list = []
+        var rVal = "";
+        for (var i of levels) {
+            node_width = 10 * total_width / i.length; // five characters per furthest down node
+            level_above_str = "";
+            level_str = "";
+            everyOther = true;
+            for (var j of i) {
+                if (i.length != 1) {
+                    if (everyOther) {
+                        level_above_str += " ".repeat(((node_width / 2) | 0) - 1) + "/" + " ".repeat(((node_width / 2) | 0));
+                    } else {
+                        level_above_str += " ".repeat(((node_width / 2) | 0) - 1) + "\\" + " ".repeat(((node_width / 2) | 0));
+                    }
+                }
+                everyOther = !everyOther;
+                if (j === null) {
+                    level_str += " ".repeat(((node_width / 2) | 0) - 1) + "-" + " ".repeat(((node_width / 2) | 0));
+                } else if (j.rep.isTombstone) {
+                    level_str += " ".repeat(((node_width / 2) | 0) - 1) + "d" + " ".repeat(((node_width / 2) | 0));
+                } else {
+                    level_str += " ".repeat(((node_width / 2) | 0) - 1) + "a" + " ".repeat(((node_width / 2) | 0));
+                }
             }
-
-            levels[depth] = levels[depth] || [];
-            if (node.rep.isTombstone) {
-                levels[depth].push("RIP");
-            } else {
-                levels[depth].push("LIVE");
-            }
-
-            //traverse right branch
-            if (!!node.rightChild) {
-                levels = _extractNodes(node.rightChild, depth + 1, levels);
-            }
-
-            return levels;
-        };
-        var levels = _extractNodes(this, 0, []);
-        return _printNodes(levels);
+            rVal = level_above_str + "\n" + level_str + "\n" + rVal;
+        }
+        return rVal;
     }
 }
 

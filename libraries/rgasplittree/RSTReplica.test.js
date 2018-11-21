@@ -21,6 +21,8 @@ test("testing RSTReplica toString method on empty replica", () => {
     expect(rep.toString()).toEqual("");
 });
 
+// TODO test tostring on non-empty replica
+
 // position tests
 test("testing Position constructor", () => {
     var pos = new replica.Position(null, 5);
