@@ -33,6 +33,7 @@ RSTReplica.prototype = {
     // op: remote RSTOp to apply to local replica
     // returns boolean indicating success
     remoteInsert: function (op) {
+        console.log("called remote insert\n");
         var insNode = new RSTNode.RSTNode(op.vTomb, op.contents, null, null, false, null)
         var refNode, nextNode, refTree;
 
@@ -66,6 +67,7 @@ RSTReplica.prototype = {
     },
     // perform remote delete
     remoteDelete: function (op) {
+        console.log("called remote delete\n");
         var offsetStartAbs = op.offsetStart + op.vPos.offset - 1;
         var offsetStartRel = op.offsetStart - 1;
         var offsetEndAbs = op.offsetEnd + op.vPos.offset;
@@ -101,7 +103,9 @@ RSTReplica.prototype = {
     },
     // perform remote split, given node and offset
     // TODO need to go through and replace key.offset with conditional if the key is null
+    // node is
     remoteSplit: function (node, offset) {
+        console.log("called remote split\n");
         assertion.assert(node.printType(), "node");
         var end = null;
         if (offset - node.key.offset > 0 && node.length - offset + node.key.offset > 0) {
@@ -111,8 +115,6 @@ RSTReplica.prototype = {
             if (!node.isTombstone) {
                 a = node.content.slice(0, offset - node.key.offset);
                 b = node.content.slice(offset - node.key.offset, node.length);
-                console.log("a: " + a);
-                console.log("b: " + b);
             }
             var temp = new s3vector.s3Vector(null, offset, node.key.sid);
             temp.sum = node.key.sum;
@@ -124,7 +126,6 @@ RSTReplica.prototype = {
             node.length = offset - node.key.offset;
             node.nextLink = end;
             node.splitLink = end;
-
 
             // TODO are we hashing on key or node?
             this.dict.set(node.key.hash(), node);
@@ -141,6 +142,7 @@ RSTReplica.prototype = {
     },
     // get the best node based 
     getSuitableNode: function (node, offsetToBeat) {
+        console.log("called get suitable node\n");
         while (node.length + ((node.key !== null) ? node.key.offset : 0) < offsetToBeat) {
             node = node.splitLink;
         }
@@ -149,12 +151,12 @@ RSTReplica.prototype = {
     // finds the Position in local replica
     // pos is int
     findPositionInLocalTree: function (pos) {
+        console.log("called find position in local tree\n");
         var tree = this.root;
         if (pos <= 0 || this.root === null) {
             // TODO why is this null and not tree
             return new Position(null, 0);
         } else if (pos >= this.size) {
-            // TODO implement
             tree = this.findMostRight(tree, 0);
             return new Position(tree.rep, tree.rep.length);
         } else {
@@ -178,6 +180,7 @@ RSTReplica.prototype = {
     },
 
     insertInLocalTree: function (nodeOld, nodeNew) {
+        console.log("called insert into local tree\n");
         var tree = null;
         if (nodeOld !== null) {
             tree = nodeOld.idTree;
@@ -187,7 +190,7 @@ RSTReplica.prototype = {
         newTree = new bbt.BalancedBinaryTree(nodeNew, null, null, null);
 
         var rootIsNull = this.root === null;
-        if (rootIsNull || (nodeNew !== null && nodeNew === this.head)) {
+        if (rootIsNull || (nodeOld !== null && nodeOld === this.head)) {
             if (rootIsNull) {
                 this.root = newTree;
             } else if (this.root.leftChild === null) {
@@ -226,6 +229,7 @@ RSTReplica.prototype = {
         }
     },
     deleteInLocalTree: function (nodeToDelete) {
+        console.log("called delete in local tree\n");
         var tree = nodeToDelete.idTree;
         assertion.assert(tree.printType(), "tree node");
         var parent = null;
@@ -237,10 +241,8 @@ RSTReplica.prototype = {
 
         if (!isRoot) {
             parent = tree.parent;
-            console.log(tree.prettyPrint());
-            console.log(tree.printType());
             assertion.assert(parent.printType(), "tree node");
-            // TODO wtf is this logic makes zero sense
+            // TODO wtf is this logic...copied directly, but you should definitely simplify it...
             if (parent.leftChild === null) {
                 isLeftChild = false;
                 // TODO should actually test for equality by value, not just by reference
@@ -261,6 +263,8 @@ RSTReplica.prototype = {
                 var leftMost = this.findMostLeft(tree.rightChild, this.root.leftChild.length)
                 assertion.assert(leftMost.printType(), "tree node");
                 leftMost.leftChild = this.root.leftChild;
+                this.root.leftChild.parent = leftMost;
+                this.root = this.root.rightChild;
             }
         } else if (isLeaf) {
             if (isLeftChild) {
@@ -296,16 +300,14 @@ RSTReplica.prototype = {
                     tree.rightChild.parent = parent.leftChild;
                 } else {
                     parent.rightChild = tree.rightChild;
-                    tree.rightChild = parent.rightChild;
+                    tree.rightChild.parent = parent.rightChild;
                 }
             }
         }
         assertion.assert(parent.printType(), "tree node");
-        console.log(parent.printType());
 
         // remove the length from everything
         while (parent !== null) {
-            console.log("hi!")
             parent.length -= nodeToDelete.length;
             parent = parent.parent;
         }
@@ -314,6 +316,7 @@ RSTReplica.prototype = {
     // treeRoot is the root of the subtree 
     // i is an integer to be added to length of each left child
     findMostLeft: function (treeRoot, i) {
+        console.log("called find most left node\n");
         var treeNode = treeRoot;
         while (treeNode.leftChild !== null) {
             treeNode.length += i;
@@ -323,6 +326,7 @@ RSTReplica.prototype = {
         return treeNode;
     },
     findMostRight: function (treeRoot, i) {
+        console.log("called find most right node\n")
         var treeNode = treeRoot;
         while (treeNode.rightChild !== null) {
             treeNode.length += i;

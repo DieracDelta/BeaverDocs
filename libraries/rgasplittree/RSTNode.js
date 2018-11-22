@@ -20,7 +20,7 @@ function RSTNode(key, content, nextLink, splitLink, isTombstone, idTree) {
     if (this.content !== null) {
         this.length = this.content.length;
     } else {
-        this.length = -1;
+        this.length = 0;
     }
 }
 
