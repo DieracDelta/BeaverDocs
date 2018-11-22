@@ -61,9 +61,13 @@ RSTNode.prototype = {
         return 267 + ((this.key !== null) ? this.key.hash() : 0);
     },
     toString: function () {
+        var nl = (this.nextLink === null) ? null : this.nextLink.key.toString();
+        var sl = (this.splitLink === null) ? null : this.splitLink.key.toString();
+        var pptree = (this.idTree === null) ? null : this.idTree.prettyPrint();
         return `\tNode with:\n\t\tkey:${this.key}\n\t\tcontent:${this.content}\
-            \n\t\tnext link: ${this.nextLink}\n\t\tsplit link:${this.splitLink}
-            \n\t\tis tombstone:${this.isTombstone}\n\t\t${this.idTree}\
+            \n\t\tnext link: ${nl}\n\t\tsplit link:${sl}
+            \n\t\tis tombstone:${this.isTombstone}\
+            \n\t\tidtree:${pptree}\
             \n\t\tlength:${this.length}\n`;
     },
     getOffset: function () {

@@ -5,6 +5,9 @@ const bbt = require('../trees/balancedbinary');
 const hashmap = require('../../node_modules/hashmap/hashmap');
 const assertion = require('../assertions');
 
+const printCall = false;
+const findPositionInLocalTreeDebug = false;
+
 function RSTReplica() {
     // TODO create your own version of dictionary that hashes s3vectors -> nodes
     this.dict = new hashmap.HashMap();
@@ -33,7 +36,14 @@ RSTReplica.prototype = {
     // op: remote RSTOp to apply to local replica
     // returns boolean indicating success
     remoteInsert: function (op) {
-        console.log("called remote insert\n");
+        // if (this.root === null) {
+        //     console.log("root is null");
+        // } else {
+        //     console.log("root len: " + this.root.rep.toString());
+        // }
+        // if (printCall) {
+        // console.log("called remote insert\n");
+        // }
         var insNode = new RSTNode.RSTNode(op.vTomb, op.contents, null, null, false, null)
         var refNode, nextNode, refTree;
 
@@ -44,6 +54,9 @@ RSTReplica.prototype = {
             refNode = this.getSuitableNode(this.dict.get(op.vPos.hash()), netOffset);
             this.remoteSplit(refNode, netOffset);
         }
+        if (refNode.idTree !== null && refNode.idTree.rightChild !== null) {
+            console.log("ref Node: " + refNode.idTree.rightChild.rep.toString());
+        }
 
         nextNode = refNode.nextLink;
         while (nextNode !== null) {
@@ -53,7 +66,6 @@ RSTReplica.prototype = {
             }
             refNode = nextNode;
             nextNode = nextnode.nextLink;
-
         }
 
         refTree = refNode.getNextAliveLinkedListNode();
@@ -67,7 +79,9 @@ RSTReplica.prototype = {
     },
     // perform remote delete
     remoteDelete: function (op) {
-        console.log("called remote delete\n");
+        if (printCall) {
+            console.log("called remote delete\n");
+        }
         var offsetStartAbs = op.offsetStart + op.vPos.offset - 1;
         var offsetStartRel = op.offsetStart - 1;
         var offsetEndAbs = op.offsetEnd + op.vPos.offset;
@@ -105,7 +119,9 @@ RSTReplica.prototype = {
     // TODO need to go through and replace key.offset with conditional if the key is null
     // node is
     remoteSplit: function (node, offset) {
-        console.log("called remote split\n");
+        if (printCall) {
+            console.log("called remote split\n");
+        }
         assertion.assert(node.printType(), "node");
         var end = null;
         if (offset - node.key.offset > 0 && node.length - offset + node.key.offset > 0) {
@@ -120,7 +136,7 @@ RSTReplica.prototype = {
             temp.sum = node.key.sum;
             end = new RSTNode.RSTNode(temp, b, node.nextLink, node.splitLink, node.isTombstone, node.idTree);
             // redundant?
-            end.length = offset - node.key.offset;
+            end.length = node.length - offset - node.key.offset;
 
             node.content = a;
             node.length = offset - node.key.offset;
@@ -142,7 +158,9 @@ RSTReplica.prototype = {
     },
     // get the best node based 
     getSuitableNode: function (node, offsetToBeat) {
-        console.log("called get suitable node\n");
+        if (printCall) {
+            console.log("called get suitable node\n");
+        }
         while (node.length + ((node.key !== null) ? node.key.offset : 0) < offsetToBeat) {
             node = node.splitLink;
         }
@@ -151,7 +169,9 @@ RSTReplica.prototype = {
     // finds the Position in local replica
     // pos is int
     findPositionInLocalTree: function (pos) {
-        console.log("called find position in local tree\n");
+        if (printCall) {
+            console.log("called find position in local tree\n");
+        }
         var tree = this.root;
         if (pos <= 0 || this.root === null) {
             // TODO why is this null and not tree
@@ -160,16 +180,25 @@ RSTReplica.prototype = {
             tree = this.findMostRight(tree, 0);
             return new Position(tree.rep, tree.rep.length);
         } else {
+            var counter = 0;
+            // TODO print out the metadata and do a play-by-play compare
             while (
                 !(tree.length - ((tree.rightChild === null) ? 0 : tree.rightChild.length) - tree.rep.length < pos &&
                     pos <= tree.length - ((tree.rightChild === null) ? 0 : tree.rightChild.length)
                 )
             ) {
+                if (findPositionInLocalTreeDebug) {
+                    console.log("tree length:" + tree.length + "\n");
+                    console.log("right child length: " + ((tree.rightChild === null) ? "null righchild" : tree.rightChild.length) + "\n");
+                    console.log("tree rep length: " + tree.rep.length + "\n");
+                    console.log("pos: " + pos + "\n");
+                }
                 if (pos <= tree.length - ((tree.rightChild === null) ? 0 : tree.rightChild.length) - tree.rep.length) {
                     tree = tree.leftChild;
                 } else {
                     pos -= ((tree.leftChild === null) ? 0 : tree.leftChild.length) + tree.rep.length;
                     tree = tree.rightChild;
+                    // console.log("THE TREE IS NULL O SHIT: " + tree);
                 }
             }
 
@@ -180,7 +209,9 @@ RSTReplica.prototype = {
     },
 
     insertInLocalTree: function (nodeOld, nodeNew) {
-        console.log("called insert into local tree\n");
+        if (printCall) {
+            console.log("called insert into local tree\n");
+        }
         var tree = null;
         if (nodeOld !== null) {
             tree = nodeOld.idTree;
@@ -229,7 +260,9 @@ RSTReplica.prototype = {
         }
     },
     deleteInLocalTree: function (nodeToDelete) {
-        console.log("called delete in local tree\n");
+        if (printCall) {
+            console.log("called delete in local tree\n");
+        }
         var tree = nodeToDelete.idTree;
         assertion.assert(tree.printType(), "tree node");
         var parent = null;
@@ -316,7 +349,9 @@ RSTReplica.prototype = {
     // treeRoot is the root of the subtree 
     // i is an integer to be added to length of each left child
     findMostLeft: function (treeRoot, i) {
-        console.log("called find most left node\n");
+        if (printCall) {
+            console.log("called find most left node\n");
+        }
         var treeNode = treeRoot;
         while (treeNode.leftChild !== null) {
             treeNode.length += i;
@@ -326,7 +361,9 @@ RSTReplica.prototype = {
         return treeNode;
     },
     findMostRight: function (treeRoot, i) {
-        console.log("called find most right node\n")
+        if (printCall) {
+            console.log("called find most right node\n")
+        }
         var treeNode = treeRoot;
         while (treeNode.rightChild !== null) {
             treeNode.length += i;

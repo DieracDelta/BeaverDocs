@@ -19,11 +19,11 @@ RSTWrapper.prototype = {
     // returns list of RSTops to broadcast to replicas
     applyLocal: function (op) {
         // TODO deal with other cases
-        switch (ops.opType) {
+        switch (op.opType) {
             case Ops.opEnum.INSERT_OP:
-                return localInsert(op);
+                return this.localInsert(op);
             case Ops.opEnum.DELETE_OP:
-                return localDelete(op);
+                return this.localDelete(op);
             default:
                 return null;
         }
