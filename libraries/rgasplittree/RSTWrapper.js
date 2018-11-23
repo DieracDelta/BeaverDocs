@@ -59,7 +59,9 @@ RSTWrapper.prototype = {
         var startPos = this.replica.findPositionInLocalTree(op.pos + 1);
         var endPos = this.replica.findPositionInLocalTree(op.pos + op.arg);
         var startNode = startPos.node;
+        console.log("START NODE: " + startNode.toString());
         var endNode = endPos.node;
+        console.log("END NODE: " + endNode.toString());
 
         if (RSTNode.equal(startNode, endNode)) {
             var temp = startNode.key;
@@ -78,8 +80,9 @@ RSTWrapper.prototype = {
             vPos.sum = temp.sum;
             var rOp = new Ops.RSTOp(
                 Ops.opEnum.DELETE_OP, null, vPos, vPos, startPos.offset,
-                endNode.length, 0, 0
+                startNode.length, 0, 0
             );
+            console.log("YEEEET");
             this.replica.apply(rOp);
             console.log("2: replica looks like: " + this.replica.toString());
             listOfOps.push(rOp);
@@ -88,13 +91,14 @@ RSTWrapper.prototype = {
             console.log("temp node: " + tempNode.toString());
 
             while (tempNode !== null && !RSTNode.equal(tempNode, endNode)) {
-                var temp2 = startNode.key;
+                var temp2 = tempNode.key;
                 var vPos2 = new s3v.s3Vector(null, temp2.offset, temp2.sid);
                 vPos2.sum = temp2.sum;
                 var rOp2 = new Ops.RSTOp(
                     Ops.opEnum.DELETE_OP, null, vPos2, vPos2, 0,
-                    endNode.length, 0, 0
+                    tempNode.length, 0, 0
                 );
+                console.log("3: operation to apply: " + rOp2.toString());
                 this.replica.apply(rOp2);
                 console.log("3: replica looks like: " + this.replica.toString());
                 listOfOps.push(rOp2);
@@ -102,13 +106,15 @@ RSTWrapper.prototype = {
             }
 
             if (endPos.offset !== 0) {
-                var temp3 = startNode.key;
+                var temp3 = endNode.key;
                 var vPos3 = new s3v.s3Vector(null, temp3.offset, temp3.sid);
                 vPos3.sum = temp3.sum;
                 var rOp3 = new Ops.RSTOp(
                     Ops.opEnum.DELETE_OP, null, vPos3, vPos3, 0,
                     endPos.offset, 0, 0
                 );
+                console.log("4: operation to apply: " + rOp3.toString());
+                // assertion.assert(false);
                 this.replica.apply(rOp3);
                 console.log("4: replica looks like: " + this.replica.toString());
                 listOfOps.push(rOp3);

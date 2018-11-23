@@ -9,6 +9,7 @@ const printCall = false;
 const findPositionInLocalTreeDebug = false;
 
 function RSTReplica() {
+    this.ntc = 0;
     // TODO create your own version of dictionary that hashes s3vectors -> nodes
     this.dict = new hashmap.HashMap();
     // head of the linked list
@@ -80,6 +81,8 @@ RSTReplica.prototype = {
     },
     // perform remote delete
     remoteDelete: function (op) {
+        // TODO delete this
+        this.ntc++;
         if (printCall) {
             console.log("called remote delete\n");
         }
@@ -89,9 +92,11 @@ RSTReplica.prototype = {
         var offsetEndRel = op.offsetEnd;
 
         var delNode = this.dict.get(op.vPos.hash());
+        // console.log("The Node: " + delNode.toString());
 
         assertion.assert(delNode.printType(), "node");
         delNode = this.getSuitableNode(delNode, offsetStartAbs);
+        // console.log("The Good Node: " + delNode.toString());
         // console.log("delNode:" + delNode.toString());
         assertion.assert(delNode.printType(), "node");
 
@@ -101,9 +106,14 @@ RSTReplica.prototype = {
             delNode = delNode.splitLink;
             // console.log("linked node: " + delNode.toString());
         }
+        // console.log("The node NOW! " + delNode.toString());
         assertion.assert(delNode.printType(), "node");
+        // console.log(this.ntc)
         // im herer boi
+        console.log("THE OFFST SHIT" + delNode.getOffset() + ", " + delNode.length + ", " + offsetEndAbs + ", " +
+            op.offsetEnd + ", " + op.vPos.offset);
         while (delNode.getOffset() + delNode.length < offsetEndAbs) {
+            console.log("The NODE: " + delNode.toString());
             // console.log("some more deleted nodes: " + delNode.toString());
             if (!delNode.isTombstone) {
                 this.size -= delNode.length;
@@ -114,9 +124,9 @@ RSTReplica.prototype = {
         }
 
         if (offsetEndRel > 0) {
-            // console.log("dleeted node: " + delNode.toString());
+            console.log("pre splitted node: " + delNode.toString());
             this.remoteSplit(delNode, offsetEndAbs);
-            console.log("splitted node:  " + delNode.toString());
+            console.log("post splitted node:  " + delNode.toString());
             if (!delNode.isTombstone) {
                 console.log("SHIYUT");
                 this.size -= delNode.length;
@@ -124,7 +134,6 @@ RSTReplica.prototype = {
             }
             delNode.kill();
         }
-        // assertion.assert(false);
     },
     // perform remote split, given node and offset
     // TODO need to go through and replace key.offset with conditional if the key is null
@@ -301,9 +310,9 @@ RSTReplica.prototype = {
             }
         }
 
-        console.log("parent len: " + parent.length);
-        console.log("parent: " + parent.rep.toString());
-        console.log("isLeftChild: " + isLeftChild);
+        // console.log("parent len: " + parent.length);
+        // console.log("parent: " + parent.rep.toString());
+        // console.log("isLeftChild: " + isLeftChild);
 
         if (isRoot) {
             if (isLeaf) {
@@ -344,8 +353,11 @@ RSTReplica.prototype = {
                     tree.rightChild.parent = parent;
                 }
             } else {
+                console.log("tree thing rep: " + tree.rep.toString());
                 var mostLeft = this.findMostLeft(tree.rightChild, tree.leftChild.length);
-                assertion.assert(leftMost.printType(), "tree node");
+                console.log("most left is: " + mostLeft.toString());
+                console.log("I GOT HERE YES")
+                assertion.assert(mostLeft.printType(), "tree node");
                 mostLeft.leftChild = tree.leftChild;
                 tree.leftChild.parent = mostLeft;
                 if (isLeftChild) {
@@ -357,12 +369,16 @@ RSTReplica.prototype = {
                 }
             }
         }
-        assertion.assert(parent.printType(), "tree node");
+        // assertion.assert(parent.printType(), "tree node");
 
         // remove the length from everything
-        while (parent !== null) {
+        while (parent != null) {
+            // break;
             parent.length -= nodeToDelete.length;
             parent = parent.parent;
+            console.log("parent is: " + parent);
+            console.log("type of parent: " + typeof (parent));
+            // console.log("tree " + parent.prettyPrint());
         }
     },
     // iterates through, adds i to all the right children and returns the rightmost

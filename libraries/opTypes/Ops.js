@@ -35,6 +35,17 @@ function RSTOp(opType, contents, vPos, vTomb, offsetStart, offsetEnd, pos, len) 
 RSTOp.prototype = {
     getSID: function () {
         return this.vTomb.sid;
+    },
+    toString: function () {
+        var operationType = "INSERT"
+        if (this.opType === opEnum.DELETE_OP) {
+            operationType = "DELETE"
+        }
+        return `RSTOP:\n\top type:${operationType}\n\tcontents: ${this.contents}\
+        \n\tvPos:${this.vPos.toString()}\n\tvTomb:${this.vTomb.toString()}\
+        \n\toffsetStart:${this.offsetStart}\n\toffsetEnd:${this.offsetEnd}\
+        \n\tpos:${this.pos}
+        \n\tlen:${this.len}`;
     }
 }
 
