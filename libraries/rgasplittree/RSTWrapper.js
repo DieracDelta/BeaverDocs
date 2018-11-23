@@ -59,9 +59,9 @@ RSTWrapper.prototype = {
         var startPos = this.replica.findPositionInLocalTree(op.pos + 1);
         var endPos = this.replica.findPositionInLocalTree(op.pos + op.arg);
         var startNode = startPos.node;
-        console.log("START NODE: " + startNode.toString());
+        // console.log("START NODE: " + startNode.toString());
         var endNode = endPos.node;
-        console.log("END NODE: " + endNode.toString());
+        // console.log("END NODE: " + endNode.toString());
 
         if (RSTNode.equal(startNode, endNode)) {
             var temp = startNode.key;
@@ -72,7 +72,7 @@ RSTWrapper.prototype = {
                 endPos.offset, 0, 0
             );
             this.replica.apply(rOp);
-            console.log("1: replica looks like: " + this.replica.toString());
+            // console.log("1: replica looks like: " + this.replica.toString());
             listOfOps.push(rOp);
         } else {
             var temp = startNode.key;
@@ -82,13 +82,13 @@ RSTWrapper.prototype = {
                 Ops.opEnum.DELETE_OP, null, vPos, vPos, startPos.offset,
                 startNode.length, 0, 0
             );
-            console.log("YEEEET");
+            // console.log("YEEEET");
             this.replica.apply(rOp);
-            console.log("2: replica looks like: " + this.replica.toString());
+            // console.log("2: replica looks like: " + this.replica.toString());
             listOfOps.push(rOp);
 
             var tempNode = startNode.getNextAliveLinkedListNode();
-            console.log("temp node: " + tempNode.toString());
+            // console.log("temp node: " + tempNode.toString());
 
             while (tempNode !== null && !RSTNode.equal(tempNode, endNode)) {
                 var temp2 = tempNode.key;
@@ -98,9 +98,9 @@ RSTWrapper.prototype = {
                     Ops.opEnum.DELETE_OP, null, vPos2, vPos2, 0,
                     tempNode.length, 0, 0
                 );
-                console.log("3: operation to apply: " + rOp2.toString());
+                // console.log("3: operation to apply: " + rOp2.toString());
                 this.replica.apply(rOp2);
-                console.log("3: replica looks like: " + this.replica.toString());
+                // console.log("3: replica looks like: " + this.replica.toString());
                 listOfOps.push(rOp2);
                 tempNode = tempNode.getNextAliveLinkedListNode();
             }
@@ -113,10 +113,10 @@ RSTWrapper.prototype = {
                     Ops.opEnum.DELETE_OP, null, vPos3, vPos3, 0,
                     endPos.offset, 0, 0
                 );
-                console.log("4: operation to apply: " + rOp3.toString());
+                // console.log("4: operation to apply: " + rOp3.toString());
                 // assertion.assert(false);
                 this.replica.apply(rOp3);
-                console.log("4: replica looks like: " + this.replica.toString());
+                // console.log("4: replica looks like: " + this.replica.toString());
                 listOfOps.push(rOp3);
             }
         }

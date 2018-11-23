@@ -61,7 +61,7 @@ RSTReplica.prototype = {
 
         nextNode = refNode.nextLink;
         while (nextNode !== null) {
-            console.log("next node: " + nextNode.toString());
+            // console.log("next node: " + nextNode.toString());
             // TODO add into while statement :/
             if (s3vector.preceeds(nextNode.key, op.vTomb)) {
                 break;
@@ -110,10 +110,10 @@ RSTReplica.prototype = {
         assertion.assert(delNode.printType(), "node");
         // console.log(this.ntc)
         // im herer boi
-        console.log("THE OFFST SHIT" + delNode.getOffset() + ", " + delNode.length + ", " + offsetEndAbs + ", " +
-            op.offsetEnd + ", " + op.vPos.offset);
+        // console.log("THE OFFST SHIT" + delNode.getOffset() + ", " + delNode.length + ", " + offsetEndAbs + ", " +
+        // op.offsetEnd + ", " + op.vPos.offset);
         while (delNode.getOffset() + delNode.length < offsetEndAbs) {
-            console.log("The NODE: " + delNode.toString());
+            // console.log("The NODE: " + delNode.toString());
             // console.log("some more deleted nodes: " + delNode.toString());
             if (!delNode.isTombstone) {
                 this.size -= delNode.length;
@@ -124,11 +124,11 @@ RSTReplica.prototype = {
         }
 
         if (offsetEndRel > 0) {
-            console.log("pre splitted node: " + delNode.toString());
+            // console.log("pre splitted node: " + delNode.toString());
             this.remoteSplit(delNode, offsetEndAbs);
-            console.log("post splitted node:  " + delNode.toString());
+            // console.log("post splitted node:  " + delNode.toString());
             if (!delNode.isTombstone) {
-                console.log("SHIYUT");
+                // console.log("SHIYUT");
                 this.size -= delNode.length;
                 this.deleteInLocalTree(delNode);
             }
@@ -209,7 +209,7 @@ RSTReplica.prototype = {
                 )
             ) {
                 if (findPositionInLocalTreeDebug) {
-                    console.log("tree length:" + tree.length + "\n");
+                    // console.log("tree length:" + tree.length + "\n");
                     console.log("right child length: " + ((tree.rightChild === null) ? "null righchild" : tree.rightChild.length) + "\n");
                     console.log("tree rep length: " + tree.rep.length + "\n");
                     console.log("pos: " + pos + "\n");
@@ -246,6 +246,7 @@ RSTReplica.prototype = {
             if (rootIsNull) {
                 this.root = newTree;
             } else if (this.root.leftChild === null) {
+                assertion.assertNotEqual(newTree, this.root);
                 this.root.leftChild = newTree;
                 if (newTree !== null) {
                     newTree.parent = this.root;
@@ -349,6 +350,7 @@ RSTReplica.prototype = {
                     tree.leftChild.parent = parent;
                 } else {
                     assertion.assertNotEqual(parent, tree.leftChild);
+                    // TODO shouldn't this be nulled out?
                     parent.rightChild = tree.leftChild;
                     tree.leftChild.parent = parent;
                 }
@@ -363,10 +365,10 @@ RSTReplica.prototype = {
                     tree.rightChild.parent = parent;
                 }
             } else {
-                console.log("tree thing rep: " + tree.rep.toString());
+                // console.log("tree thing rep: " + tree.rep.toString());
                 var mostLeft = this.findMostLeft(tree.rightChild, tree.leftChild.length);
-                console.log("most left is: " + mostLeft.toString());
-                console.log("I GOT HERE YES")
+                // console.log("most left is: " + mostLeft.toString());
+                // console.log("I GOT HERE YES")
                 assertion.assert(mostLeft.printType(), "tree node");
                 assertion.assertNotEqual(mostLeft, tree.leftChild);
                 mostLeft.leftChild = tree.leftChild;
@@ -390,7 +392,7 @@ RSTReplica.prototype = {
         // while (counter < 1000) {
         while (parent !== null) {
             // break;
-            console.log("the pArent is: " + parent.toString());
+            // console.log("the pArent is: " + parent.toString());
             parent.length -= nodeToDelete.length;
             if (parent.parent == parent) {
                 break;

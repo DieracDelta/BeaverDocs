@@ -74,7 +74,7 @@ test("testing RSTWrapper deletes local operations", () => {
     test.applyLocal(insertOp2);
     expect(test.toString()).toBe("ab28cdefghij")
     var insertOp3 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['7', '3'], 10, 2);
-    console.log("before third insert");
+    // console.log("before third insert");
     test.applyLocal(insertOp3);
     expect(test.toString()).toBe("ab28cdefgh73ij");
     // console.log(test.replica.root.prettyPrint());
