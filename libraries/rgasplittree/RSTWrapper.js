@@ -70,6 +70,7 @@ RSTWrapper.prototype = {
                 endPos.offset, 0, 0
             );
             this.replica.apply(rOp);
+            console.log("1: replica looks like: " + this.replica.toString());
             listOfOps.push(rOp);
         } else {
             var temp = startNode.key;
@@ -80,11 +81,13 @@ RSTWrapper.prototype = {
                 endNode.length, 0, 0
             );
             this.replica.apply(rOp);
+            console.log("2: replica looks like: " + this.replica.toString());
             listOfOps.push(rOp);
 
             var tempNode = startNode.getNextAliveLinkedListNode();
+            console.log("temp node: " + tempNode.toString());
 
-            while (tempNode !== null && RSTNode.equal(tempNode, endNode)) {
+            while (tempNode !== null && !RSTNode.equal(tempNode, endNode)) {
                 var temp2 = startNode.key;
                 var vPos2 = new s3v.s3Vector(null, temp2.offset, temp2.sid);
                 vPos2.sum = temp2.sum;
@@ -93,6 +96,7 @@ RSTWrapper.prototype = {
                     endNode.length, 0, 0
                 );
                 this.replica.apply(rOp2);
+                console.log("3: replica looks like: " + this.replica.toString());
                 listOfOps.push(rOp2);
                 tempNode = tempNode.getNextAliveLinkedListNode();
             }
@@ -106,6 +110,7 @@ RSTWrapper.prototype = {
                     endPos.offset, 0, 0
                 );
                 this.replica.apply(rOp3);
+                console.log("4: replica looks like: " + this.replica.toString());
                 listOfOps.push(rOp3);
             }
         }

@@ -89,16 +89,22 @@ RSTReplica.prototype = {
         var offsetEndRel = op.offsetEnd;
 
         var delNode = this.dict.get(op.vPos.hash());
+
         assertion.assert(delNode.printType(), "node");
         delNode = this.getSuitableNode(delNode, offsetStartAbs);
+        // console.log("delNode:" + delNode.toString());
         assertion.assert(delNode.printType(), "node");
 
         if (offsetStartRel > 0) {
             this.remoteSplit(delNode, offsetStartAbs);
+            // console.log("split node: " + delNode.toString());
             delNode = delNode.splitLink;
+            // console.log("linked node: " + delNode.toString());
         }
         assertion.assert(delNode.printType(), "node");
+        // im herer boi
         while (delNode.getOffset() + delNode.length < offsetEndAbs) {
+            // console.log("some more deleted nodes: " + delNode.toString());
             if (!delNode.isTombstone) {
                 this.size -= delNode.length;
                 this.deleteInLocalTree(delNode);
@@ -108,13 +114,17 @@ RSTReplica.prototype = {
         }
 
         if (offsetEndRel > 0) {
+            // console.log("dleeted node: " + delNode.toString());
             this.remoteSplit(delNode, offsetEndAbs);
+            console.log("splitted node:  " + delNode.toString());
             if (!delNode.isTombstone) {
+                console.log("SHIYUT");
                 this.size -= delNode.length;
                 this.deleteInLocalTree(delNode);
             }
             delNode.kill();
         }
+        // assertion.assert(false);
     },
     // perform remote split, given node and offset
     // TODO need to go through and replace key.offset with conditional if the key is null
@@ -137,11 +147,7 @@ RSTReplica.prototype = {
             temp.sum = node.key.sum;
             end = new RSTNode.RSTNode(temp, b, node.nextLink, node.splitLink, node.isTombstone, node.idTree);
             // redundant?
-            console.log("node length: " + node.length);
-            console.log("offset: " + node.length);
-            console.log("key offset : " + node.key.offset);
             end.length = node.length - offset + node.key.offset;
-            console.log("length of end: " + end.length);
 
             node.content = a;
             node.length = offset - node.key.offset;
@@ -276,6 +282,12 @@ RSTReplica.prototype = {
         var hasLeftChild = tree.leftChild !== null;
         var isLeaf = !hasRightChild && !hasLeftChild;
         var isLeftChild = false;
+        // console.log("tree size : " + tree.length);
+        // console.log("tree rep : " + tree.rep.toString());
+        // console.log("isRoot: " + isRoot);
+        // console.log("has right child: " + hasRightChild);
+        // console.log("has left child: " + hasLeftChild);
+        // console.log("is leaf: " + isLeaf);
 
         if (!isRoot) {
             parent = tree.parent;
@@ -289,6 +301,9 @@ RSTReplica.prototype = {
             }
         }
 
+        console.log("parent len: " + parent.length);
+        console.log("parent: " + parent.rep.toString());
+        console.log("isLeftChild: " + isLeftChild);
 
         if (isRoot) {
             if (isLeaf) {
