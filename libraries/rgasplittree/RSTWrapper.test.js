@@ -59,6 +59,11 @@ test("testing RSTWrapper local operations", () => {
 
     var deleteOp1 = new ops.SeqOp(ops.opEnum.DELETE_OP, null, 0, 5);
     test.localDelete(deleteOp1);
+    expect(test.toString()).toBe("mused? ha ha!");
+    var deleteOp2 = new ops.SeqOp(ops.opEnum.DELETE_OP, null, 6, 7);
+    test.localDelete(deleteOp2);
+    expect(test.toString()).toBe("mused?");
+
 });
 
 test("testing RSTWrapper deletes local operations", () => {
@@ -77,5 +82,5 @@ test("testing RSTWrapper deletes local operations", () => {
     // console.log("rep:" + test.replica.root.rightChild.rightChild.leftChild.rep.toString());
     var delOp1 = new ops.SeqOp(ops.opEnum.DELETE_OP, null, 3, 8);
     test.applyLocal(delOp1);
-    // expect(test.toString()).toBe("ab23ij");
+    expect(test.toString()).toBe("ab23ij");
 });

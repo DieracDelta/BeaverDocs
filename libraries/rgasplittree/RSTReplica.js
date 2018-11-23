@@ -285,7 +285,7 @@ RSTReplica.prototype = {
         }
         var tree = nodeToDelete.idTree;
         assertion.assert(tree.printType(), "tree node");
-        var parent = null;
+        let parent = null;
         var isRoot = tree === this.root;
         var hasRightChild = tree.rightChild !== null;
         var hasLeftChild = tree.leftChild !== null;
@@ -368,17 +368,34 @@ RSTReplica.prototype = {
                     tree.rightChild.parent = parent.rightChild;
                 }
             }
+
         }
         // assertion.assert(parent.printType(), "tree node");
 
         // remove the length from everything
-        while (parent != null) {
+        // while (parent != null && parent != undefined) {
+        counter = 0;
+        while (counter < 1000) {
+            counter++;
             // break;
-            parent.length -= nodeToDelete.length;
-            parent = parent.parent;
-            console.log("parent is: " + parent);
-            console.log("type of parent: " + typeof (parent));
+            if (parent != null) {
+                parent.length -= nodeToDelete.length;
+                if (parent.parent == null) {
+                    break;
+                } else {
+                    parent = parent.parent;
+                }
+            } else {
+                console.log("you broke at timestep " + counter);
+                break;
+            }
+            // console.log("parent is: " + parent);
+            // console.log("type of parent: " + typeof (parent));
+            // console.log("parent is null: " + (parent == null));
             // console.log("tree " + parent.prettyPrint());
+            // if (String(parent) == "null") {
+            //     break;
+            // }
         }
     },
     // iterates through, adds i to all the right children and returns the rightmost
