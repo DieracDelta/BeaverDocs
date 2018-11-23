@@ -54,12 +54,13 @@ RSTReplica.prototype = {
             refNode = this.getSuitableNode(this.dict.get(op.vPos.hash()), netOffset);
             this.remoteSplit(refNode, netOffset);
         }
-        if (refNode.idTree !== null && refNode.idTree.rightChild !== null) {
-            console.log("ref Node: " + refNode.idTree.rightChild.rep.toString());
-        }
+        // if (refNode.idTree !== null && refNode.idTree.rightChild !== null) {
+        //     console.log("ref Node: " + refNode.idTree.rightChild.rep.toString());
+        // }
 
         nextNode = refNode.nextLink;
         while (nextNode !== null) {
+            console.log("next node: " + nextNode.toString());
             // TODO add into while statement :/
             if (s3vector.preceeds(nextNode.key, op.vTomb)) {
                 break;
@@ -136,7 +137,11 @@ RSTReplica.prototype = {
             temp.sum = node.key.sum;
             end = new RSTNode.RSTNode(temp, b, node.nextLink, node.splitLink, node.isTombstone, node.idTree);
             // redundant?
-            end.length = node.length - offset - node.key.offset;
+            console.log("node length: " + node.length);
+            console.log("offset: " + node.length);
+            console.log("key offset : " + node.key.offset);
+            end.length = node.length - offset + node.key.offset;
+            console.log("length of end: " + end.length);
 
             node.content = a;
             node.length = offset - node.key.offset;
