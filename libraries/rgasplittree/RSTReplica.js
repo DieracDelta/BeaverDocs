@@ -171,6 +171,7 @@ RSTReplica.prototype = {
             if (!node.isTombstone) {
                 var treeEnd = new bbt.BalancedBinaryTree(end, null, node.idTree.rightChild, null);
                 node.idTree.rep = node;
+                assertion.assertNotEqual(treeEnd, node.idTree);
                 node.idTree.rightChild = treeEnd;
                 treeEnd.parent = node.idTree;
             }
@@ -251,6 +252,7 @@ RSTReplica.prototype = {
                 }
             } else {
                 var mostRight = findMostRight(this.root.leftChild, 0);
+                assertion.assertNotEqual(newTree, mostRight);
                 mostRight.rightChild = newTree;
                 if (newTree !== null) {
                     newTree.parent = mostRight;
@@ -258,16 +260,19 @@ RSTReplica.prototype = {
             }
         } else if (nodeOld === null) {
             var mostRight = this.findMostRight(this.root, 0);
+            assertion.assertNotEqual(newTree, mostRight);
             mostRight.rightChild = newTree;
             if (newTree !== null) {
                 newTree.parent = mostRight;
             }
         } else {
             if (tree.leftChild === null) {
+                assertion.assertNotEqual(newTree, tree);
                 tree.leftChild = newTree;
                 newTree.parent = tree;
             } else {
                 var mostRight = this.findMostRight(tree.leftChild, 0);
+                assertion.assertNotEqual(newTree, mostRight);
                 mostRight.rightChild = newTree;
                 newTree.parent = mostRight;
             }
@@ -324,6 +329,7 @@ RSTReplica.prototype = {
             } else {
                 var leftMost = this.findMostLeft(tree.rightChild, this.root.leftChild.length)
                 assertion.assert(leftMost.printType(), "tree node");
+                assertion.assertNotEqual(this.root.leftChild, leftMost);
                 leftMost.leftChild = this.root.leftChild;
                 this.root.leftChild.parent = leftMost;
                 this.root = this.root.rightChild;
@@ -338,17 +344,21 @@ RSTReplica.prototype = {
             if (!hasRightChild) {
                 if (isLeftChild) {
                     // TODO for all of these check if we can access these fields...
+                    assertion.assertNotEqual(parent, tree.leftChild);
                     parent.leftChild = tree.leftChild;
                     tree.leftChild.parent = parent;
                 } else {
+                    assertion.assertNotEqual(parent, tree.leftChild);
                     parent.rightChild = tree.leftChild;
                     tree.leftChild.parent = parent;
                 }
             } else if (!hasLeftChild) {
                 if (isLeftChild) {
+                    assertion.assertNotEqual(parent, tree.rightChild);
                     parent.leftChild = tree.rightChild;
                     tree.rightChild.parent = parent;
                 } else {
+                    assertion.assertNotEqual(parent, tree.rightChild);
                     parent.rightChild = tree.rightChild;
                     tree.rightChild.parent = parent;
                 }
@@ -358,12 +368,15 @@ RSTReplica.prototype = {
                 console.log("most left is: " + mostLeft.toString());
                 console.log("I GOT HERE YES")
                 assertion.assert(mostLeft.printType(), "tree node");
+                assertion.assertNotEqual(mostLeft, tree.leftChild);
                 mostLeft.leftChild = tree.leftChild;
                 tree.leftChild.parent = mostLeft;
                 if (isLeftChild) {
+                    assertion.assertNotEqual(parent, tree.rightChild);
                     parent.leftChild = tree.rightChild;
                     tree.rightChild.parent = parent.leftChild;
                 } else {
+                    assertion.assertNotEqual(parent, tree.rightChild);
                     parent.rightChild = tree.rightChild;
                     tree.rightChild.parent = parent.rightChild;
                 }
@@ -374,20 +387,15 @@ RSTReplica.prototype = {
 
         // remove the length from everything
         // while (parent != null && parent != undefined) {
-        counter = 0;
-        while (counter < 1000) {
-            counter++;
+        // while (counter < 1000) {
+        while (parent !== null) {
             // break;
-            if (parent != null) {
-                parent.length -= nodeToDelete.length;
-                if (parent.parent == null) {
-                    break;
-                } else {
-                    parent = parent.parent;
-                }
-            } else {
-                console.log("you broke at timestep " + counter);
+            console.log("the pArent is: " + parent.toString());
+            parent.length -= nodeToDelete.length;
+            if (parent.parent == parent) {
                 break;
+            } else {
+                parent = parent.parent;
             }
             // console.log("parent is: " + parent);
             // console.log("type of parent: " + typeof (parent));
