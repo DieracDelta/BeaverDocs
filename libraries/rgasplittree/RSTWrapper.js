@@ -18,6 +18,7 @@ RSTWrapper.prototype = {
     // op: SeqOp
     // returns list of RSTops to broadcast to replicas
     applyLocal: function (op) {
+        this.checkRep();
         // TODO deal with other cases
         switch (op.opType) {
             case Ops.opEnum.INSERT_OP:
@@ -31,6 +32,7 @@ RSTWrapper.prototype = {
     // takes a sequence operation to apply to local replica
     // returns a list of RSTOps to broadcast to remote replicas
     localInsert: function (op) {
+        this.checkRep();
         // of type replica.Position
         var pos = this.replica.findPositionInLocalTree(op.pos);
         var vPos = null;
@@ -49,12 +51,14 @@ RSTWrapper.prototype = {
                 op.pos, 0
             );
         this.replica.apply(rstOp);
+        this.checkRep();
         return [rstOp];
     },
     // takes a sequence operation to apply to local replica
     // returns a list of RSTOps to broadcast to remote replicas
     // TODO I guess I don't neeed to increment the global vc on delete operations??
     localDelete: function (op) {
+        this.checkRep();
         listOfOps = []
         var startPos = this.replica.findPositionInLocalTree(op.pos + 1);
         var endPos = this.replica.findPositionInLocalTree(op.pos + op.arg);
@@ -72,7 +76,7 @@ RSTWrapper.prototype = {
                 endPos.offset, 0, 0
             );
             this.replica.apply(rOp);
-            // console.log("1: replica looks like: " + this.replica.toString());
+            console.log("1: replica looks like: " + this.replica.toString());
             listOfOps.push(rOp);
         } else {
             var temp = startNode.key;
@@ -84,10 +88,11 @@ RSTWrapper.prototype = {
             );
             // console.log("YEEEET");
             this.replica.apply(rOp);
-            // console.log("2: replica looks like: " + this.replica.toString());
+            console.log("2: replica looks like: " + this.replica.toString());
             listOfOps.push(rOp);
 
             var tempNode = startNode.getNextAliveLinkedListNode();
+            this.checkRep();
             // console.log("temp node: " + tempNode.toString());
 
             while (tempNode !== null && !RSTNode.equal(tempNode, endNode)) {
@@ -98,9 +103,11 @@ RSTWrapper.prototype = {
                     Ops.opEnum.DELETE_OP, null, vPos2, vPos2, 0,
                     tempNode.length, 0, 0
                 );
+                this.checkRep()
                 // console.log("3: operation to apply: " + rOp2.toString());
+
                 this.replica.apply(rOp2);
-                // console.log("3: replica looks like: " + this.replica.toString());
+                console.log("3: replica looks like: " + this.replica.toString());
                 listOfOps.push(rOp2);
                 tempNode = tempNode.getNextAliveLinkedListNode();
             }
@@ -116,10 +123,11 @@ RSTWrapper.prototype = {
                 // console.log("4: operation to apply: " + rOp3.toString());
                 // assertion.assert(false);
                 this.replica.apply(rOp3);
-                // console.log("4: replica looks like: " + this.replica.toString());
+                console.log("4: replica looks like: " + this.replica.toString());
                 listOfOps.push(rOp3);
             }
         }
+        this.checkRep();
         return listOfOps;
     },
     // integrate a remote operation into replica
@@ -142,6 +150,11 @@ RSTWrapper.prototype = {
     },
     toStringDebug: function () {
         // TODO include more than just the contents (e.g. all metadata)
+    },
+    checkRep: function () {
+        if (this.replica !== null) {
+            this.replica.checkRep();
+        }
     }
 }
 

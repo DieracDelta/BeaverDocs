@@ -12,10 +12,19 @@ function assertNotEqual(a, b) {
         const msg = "expected: \n\t" + b.toString() + "\nbut got: \n\t" + a.toString;
         throw new Error(msg);
     }
+}
+
+// expected to be used only in checkrep for bbt
+function assertNEQ(a, b) {
+    if (a === b) {
+        const msg = "expected: \n\t" + b.toString() + "\nbut got: \n\t" + a.toString;
+        throw new Error(msg);
+    }
 
 }
 
 module.exports = {
     assert,
-    assertNotEqual
+    assertNotEqual,
+    assertNEQ
 }

@@ -1,3 +1,4 @@
+const assertion = require("../assertions");
 // TODO write a function to balance this tree
 // weighted binary tree structure 
 // as described in "High Responsiveness for Group Editing CRDTs"
@@ -27,7 +28,7 @@ function BalancedBinaryTree(rep, leftChild, rightChild, parent) {
         this.rightChild.parent = this;
         this.length += this.rightChild.rep.length;
     }
-
+    this.checkRep();
 }
 
 BalancedBinaryTree.prototype = {
@@ -49,6 +50,7 @@ BalancedBinaryTree.prototype = {
     },
     // prints the subtree starting at this node to stdout
     prettyPrint: function () {
+        this.checkRep();
         // list of lists of nodes (one list for each level)
         var levels = [
             [this]
@@ -105,7 +107,19 @@ BalancedBinaryTree.prototype = {
             }
             rVal = level_above_str + "\n" + level_str + "\n" + rVal;
         }
+        this.checkRep();
         return rVal;
+    },
+    checkRep: function () {
+        assertion.assertNEQ(this.parent, this);
+        if (this.leftChild !== null) {
+            assertion.assertNEQ(this.leftChild, this);
+            this.leftChild.checkRep();
+        }
+        if (this.rightChild !== null) {
+            assertion.assertNEQ(this.rightChild, this);
+            this.rightChild.checkRep();
+        }
     }
 }
 

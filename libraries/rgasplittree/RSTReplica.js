@@ -37,6 +37,7 @@ RSTReplica.prototype = {
     // op: remote RSTOp to apply to local replica
     // returns boolean indicating success
     remoteInsert: function (op) {
+        this.checkRep();
         // if (this.root === null) {
         //     console.log("root is null");
         // } else {
@@ -78,9 +79,11 @@ RSTReplica.prototype = {
         refNode.nextLink = insNode;
         this.dict.set(op.vTomb.hash(), insNode);
         this.size += insNode.length;
+        this.checkRep();
     },
     // perform remote delete
     remoteDelete: function (op) {
+        this.checkRep();
         // TODO delete this
         this.ntc++;
         if (printCall) {
@@ -134,11 +137,13 @@ RSTReplica.prototype = {
             }
             delNode.kill();
         }
+        this.checkRep();
     },
     // perform remote split, given node and offset
     // TODO need to go through and replace key.offset with conditional if the key is null
     // node is
     remoteSplit: function (node, offset) {
+        this.checkRep();
         if (printCall) {
             console.log("called remote split\n");
         }
@@ -176,29 +181,35 @@ RSTReplica.prototype = {
                 treeEnd.parent = node.idTree;
             }
         }
+        this.checkRep();
     },
     // get the best node based 
     getSuitableNode: function (node, offsetToBeat) {
+        this.checkRep();
         if (printCall) {
             console.log("called get suitable node\n");
         }
         while (node.length + ((node.key !== null) ? node.key.offset : 0) < offsetToBeat) {
             node = node.splitLink;
         }
+        this.checkRep();
         return node;
     },
     // finds the Position in local replica
     // pos is int
     findPositionInLocalTree: function (pos) {
+        this.checkRep();
         if (printCall) {
             console.log("called find position in local tree\n");
         }
         var tree = this.root;
         if (pos <= 0 || this.root === null) {
             // TODO why is this null and not tree
+            this.checkRep();
             return new Position(null, 0);
         } else if (pos >= this.size) {
             tree = this.findMostRight(tree, 0);
+            this.checkRep();
             return new Position(tree.rep, tree.rep.length);
         } else {
             var counter = 0;
@@ -223,6 +234,7 @@ RSTReplica.prototype = {
                 }
             }
 
+            this.checkRep();
             return new Position(tree.rep, pos -
                 tree.length + ((tree.rightChild === null) ? 0 : tree.rightChild.length) +
                 tree.rep.length);
@@ -233,6 +245,7 @@ RSTReplica.prototype = {
         if (printCall) {
             console.log("called insert into local tree\n");
         }
+        this.checkRep();
         var tree = null;
         if (nodeOld !== null) {
             tree = nodeOld.idTree;
@@ -284,8 +297,10 @@ RSTReplica.prototype = {
             newTree.length += nodeNew.length;
             newTree = newTree.parent;
         }
+        this.checkRep();
     },
     deleteInLocalTree: function (nodeToDelete) {
+        this.checkRep();
         if (printCall) {
             console.log("called delete in local tree\n");
         }
@@ -315,12 +330,14 @@ RSTReplica.prototype = {
                 isLeftChild = true;
             }
         }
+        this.checkRep();
 
         // console.log("parent len: " + parent.length);
         // console.log("parent: " + parent.rep.toString());
         // console.log("isLeftChild: " + isLeftChild);
 
         if (isRoot) {
+            this.checkRep();
             if (isLeaf) {
                 this.root = null;
             } else if (hasLeftChild && !hasRightChild) {
@@ -336,12 +353,14 @@ RSTReplica.prototype = {
                 this.root = this.root.rightChild;
             }
         } else if (isLeaf) {
+            this.checkRep();
             if (isLeftChild) {
                 parent.leftChild = null;
             } else {
                 parent.rightChild = null;
             }
         } else {
+            this.checkRep();
             if (!hasRightChild) {
                 if (isLeftChild) {
                     // TODO for all of these check if we can access these fields...
@@ -354,6 +373,7 @@ RSTReplica.prototype = {
                     parent.rightChild = tree.leftChild;
                     tree.leftChild.parent = parent;
                 }
+                this.checkRep();
             } else if (!hasLeftChild) {
                 if (isLeftChild) {
                     assertion.assertNotEqual(parent, tree.rightChild);
@@ -364,11 +384,13 @@ RSTReplica.prototype = {
                     parent.rightChild = tree.rightChild;
                     tree.rightChild.parent = parent;
                 }
+                this.checkRep();
             } else {
                 // console.log("tree thing rep: " + tree.rep.toString());
                 var mostLeft = this.findMostLeft(tree.rightChild, tree.leftChild.length);
                 // console.log("most left is: " + mostLeft.toString());
                 // console.log("I GOT HERE YES")
+                this.checkRep();
                 assertion.assert(mostLeft.printType(), "tree node");
                 assertion.assertNotEqual(mostLeft, tree.leftChild);
                 mostLeft.leftChild = tree.leftChild;
@@ -376,15 +398,19 @@ RSTReplica.prototype = {
                 if (isLeftChild) {
                     assertion.assertNotEqual(parent, tree.rightChild);
                     parent.leftChild = tree.rightChild;
-                    tree.rightChild.parent = parent.leftChild;
+                    tree.rightChild.parent = parent;
+                    this.checkRep();
                 } else {
                     assertion.assertNotEqual(parent, tree.rightChild);
                     parent.rightChild = tree.rightChild;
-                    tree.rightChild.parent = parent.rightChild;
+                    tree.rightChild.parent = parent;
+                    this.checkRep();
                 }
+                this.checkRep();
             }
 
         }
+        this.checkRep();
         // assertion.assert(parent.printType(), "tree node");
 
         // remove the length from everything
@@ -407,11 +433,13 @@ RSTReplica.prototype = {
             //     break;
             // }
         }
+        this.checkRep();
     },
     // iterates through, adds i to all the right children and returns the rightmost
     // treeRoot is the root of the subtree 
     // i is an integer to be added to length of each left child
     findMostLeft: function (treeRoot, i) {
+        this.checkRep();
         if (printCall) {
             console.log("called find most left node\n");
         }
@@ -421,9 +449,11 @@ RSTReplica.prototype = {
             treeNode = treeNode.leftChild;
         }
         treeNode.length += i;
+        this.checkRep();
         return treeNode;
     },
     findMostRight: function (treeRoot, i) {
+        this.checkRep();
         if (printCall) {
             console.log("called find most right node\n")
         }
@@ -433,13 +463,20 @@ RSTReplica.prototype = {
             treeNode = treeNode.rightChild;
         }
         treeNode.length += i;
+        this.checkRep();
         return treeNode;
     },
     toString: function () {
+        this.checkRep();
         if (this.root === null) {
             return "";
         } else {
             return this.root.toString();
+        }
+    },
+    checkRep: function () {
+        if (this.root !== null) {
+            this.root.checkRep();
         }
     }
 }
