@@ -7,6 +7,10 @@ const PORT = 2718;
 // TODO message type enum
 // TODO can't establish connection with yourself
 
+function yeet () {
+    console.log("yeet");
+}
+
 function PeerWrapper() {
     this.sid = generate('0123456789', 10)
     this.peerId = new peerjs(this.sid, {
@@ -42,6 +46,7 @@ PeerWrapper.prototype = {
         console.log("checking peer set")
         for (var i = 0; i < peerList.length; i++) {
             if(!this.indirectlyConnectedPeers.includes(peerList[i])){
+                console.log(`i is: ${i}, peerlist of is: ${peerList[i]}`);
                 this.connect(peerList[i]);
             }
         }
@@ -89,8 +94,9 @@ PeerWrapper.prototype = {
         conn.on('data', (jsonData) => {
             console.log("received data: " + JSON.stringify(jsonData) + " from " + conn.peer);
             document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
+            console.log(`THE PROTOTYPE IS: ${this.prototype}`);
             if(jsonData.MessageType===MessageType.PeerListUpdate){
-                this.connectSet(jsonData.messageData);
+                this.connectSet(jsonData.MessageData);
             }
         });
         conn.on('close', () => {
@@ -108,12 +114,14 @@ PeerWrapper.prototype = {
     broadcastPeerList: function() {
         console.log("broadcasting list")
         this.broadcast({
-            messageType: MessageType.PeerListUpdate,
-            messageData: Object.keys(this.directlyConnectedPeers)
+            MessageType: MessageType.PeerListUpdate,
+            MessageData: Object.keys(this.directlyConnectedPeers)
         });
     }
 
 }
+
+
 
 // // set union copied off stack overflow
 // function union(setA, setB) {
@@ -142,6 +150,7 @@ var MessageType = {
     "PeerListUpdate" : 0,
     "BroadcastUpdate" : 1
 }
+
 Object.freeze(MessageType);
 
 module.exports = {
