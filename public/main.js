@@ -5,6 +5,27 @@ window.editor = CodeMirror.fromTextArea(codemirrorContent, {
   lineNumbers: true
 });
 
+window.editor.on('cursorActivity', (editor) => {
+    document.getElementById("relpos").innerHTML = "line: " + window.editor.getDoc().getCursor()["line"] + ", ch: " + window.editor.getDoc().getCursor()["ch"];
+    document.getElementById("abspos").innerHTML = "absolute position: " + window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
+});
+
+window.editor.on('change', (editor, obj) => {
+    document.getElementById("lastchange").innerHTML = "Last change: ";
+    if (obj["origin"] === "+input") {
+        document.getElementById("lastchange").innerHTML += "+input ";
+        document.getElementById("lastchange").innerHTML += obj["text"];
+    } else if (obj["origin"] === "+delete") {
+        document.getElementById("lastchange").innerHTML += "+delete ";
+        document.getElementById("lastchange").innerHTML += obj["removed"];
+    }
+    console.log(obj);
+});
+
+function getPos() {
+    console.log(editor.getDoc().getCursorPosition().indexFromPos())
+}
+
 var curPeerWrapper = null;
 document.getElementById('init').onclick = function () {
     curPeerWrapper = new Helpers.PeerWrapper();
