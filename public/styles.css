@@ -1,0 +1,85 @@
+html, body, h1, h2, h3, h4, h5, h6, p {
+  font-family: "Barlow", "Lato", "Helvetica Neue";
+  font-weight: 300;
+}
+
+body {
+  background-color: #F8F8F8;
+}
+
+h1 {
+  font-size: 2em;
+  font-weight: 600;
+  line-height: 0.5em;
+}
+
+h2 {
+  font-size: 1.2em;
+  font-weight: 500;
+  line-height: 0.5em;
+}
+
+h3 {
+  font-size: 1.1em;
+  font-weight: 400;
+}
+
+.btn-peer {
+  border: none;
+  border-left: 1.5em solid #5F63D4;
+  text-align: left;
+  background-color: transparent;
+  color: #000000;
+  font-weight: 400;
+  padding-left: 1em;
+  margin-top: 0.5em;
+  width: 100%;
+  max-width: 10em;
+  outline: none;
+  cursor: auto;
+  white-space:nowrap;
+}
+
+.section-header {
+  padding: 1em;
+  padding-top: 2.5em;
+}
+
+.section-peers {
+  padding-left: 2em;
+}
+
+.section-mirror {
+  padding: 1em;
+  padding-right: 2em;
+}
+
+.section-footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: #FFFFFF;
+  color: #000000;
+  text-align: right;
+  padding-right: 0.5em;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.top-color-1 {
+  background-color: #E5E8EE;
+  height: 2.3em;
+}
+
+.top-color-2 {
+  background-color: #5F63D4;
+  height: 2.3em;
+}
+
+.top-color-3 {
+  background-color: #809AE5;
+  height: 2.3em;
+}

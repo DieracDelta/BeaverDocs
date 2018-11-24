@@ -1,6 +1,7 @@
 const generate = require('nanoid/generate');
 const peerjs = require('peerjs');
 const PORT = 2718;
+
 // TODO things to implement
 // shared list of all peers
 // TODO forward messages
@@ -26,7 +27,8 @@ function PeerWrapper() {
     });
     this.peerId.on('connection', (conn) => {
         this.directlyConnectedPeers[conn.peer] = conn;
-        this.PrettyPrintDirectPeerList();
+        this.IconPrintDirectPeerList();
+        // this.PrettyPrintDirectPeerList();
         console.log("A new person has initiated a connection with you. Their ID is: " + String(conn.peer));
         this.addConnectionListeners(conn);
         this.broadcastPeerList();
@@ -66,13 +68,25 @@ PeerWrapper.prototype = {
             }
             console.log("connected to " + id);
             this.directlyConnectedPeers[id] = conn;
-            this.PrettyPrintDirectPeerList();
+            this.IconPrintDirectPeerList();
+            // this.PrettyPrintDirectPeerList();
         });
         this.addConnectionListeners(conn);
     },
-    PrettyPrintDirectPeerList: function () {
-        document.getElementById('directPeerList').innerHTML =
-            Object.keys(this.directlyConnectedPeers).reduce((a, c) => a + "\n\t" + c, "Directly Connected Peers:");
+    // PrettyPrintDirectPeerList: function () {
+    //     console.log("pretty print")
+    //     document.getElementById('directPeerList').innerHTML =
+    //         Object.keys(this.directlyConnectedPeers).reduce((a, c) => a + "\n\t" + c, "Directly Connected Peers:");
+    //     console.log(Object.keys(this.directlyConnectedPeers))
+    // },
+    IconPrintDirectPeerList: function () {
+        console.log("icon print");
+        var allPeers = Object.keys(this.directlyConnectedPeers).sort()
+        console.log(allPeers);
+        document.getElementById('icon-peer-list').innerHTML = ""
+        for (i = 0; i < allPeers.length; i++) {
+            document.getElementById('icon-peer-list').innerHTML += '<button class="btn-peer">' + allPeers[i].toString() + '</button>'
+        }
     },
     broadcast: function (data) {
         for (apeerID of Object.keys(this.directlyConnectedPeers)) {
@@ -94,6 +108,7 @@ PeerWrapper.prototype = {
         conn.on('data', (jsonData) => {
             console.log("received data: " + JSON.stringify(jsonData) + " from " + conn.peer);
             document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
+            window.editor.setValue(JSON.stringify(jsonData));
             console.log(`THE PROTOTYPE IS: ${this.prototype}`);
             if(jsonData.MessageType===MessageType.PeerListUpdate){
                 this.connectSet(jsonData.MessageData);
@@ -103,12 +118,14 @@ PeerWrapper.prototype = {
             console.log("closed connection with peer " + conn.peer);
             delete this.directlyConnectedPeers[conn.peer]
             console.log(this.directlyConnectedPeers)
-            this.PrettyPrintDirectPeerList();
+            this.IconPrintDirectPeerList();
+            // this.PrettyPrintDirectPeerList();
         });
         conn.on('disconnected', () => {
             console.log("got disconnected");
             delete this.directlyConnectedPeers[conn.peer]
-            this.PrettyPrintDirectPeerList();
+            this.IconPrintDirectPeerList();
+            // this.PrettyPrintDirectPeerList();
         });
     },
     broadcastPeerList: function() {
