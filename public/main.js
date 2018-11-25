@@ -1,25 +1,56 @@
 const Helpers = require('./clientSideHelpers');
+const assertion = require('../libraries/assertions');
+const ops = require('../libraries/opTypes/Ops');
 
 var codemirrorContent = document.getElementById("codemirror-textarea");
+
 window.editor = CodeMirror.fromTextArea(codemirrorContent, {
-  lineNumbers: true
+    lineNumbers: true
 });
 
 window.editor.on('cursorActivity', (editor) => {
-    document.getElementById("relpos").innerHTML = "line: " + window.editor.getDoc().getCursor()["line"] + ", ch: " + window.editor.getDoc().getCursor()["ch"];
-    document.getElementById("abspos").innerHTML = "absolute position: " + window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
+    document.getElementById("relpos").innerHTML = "line: " +
+        window.editor.getDoc().getCursor()["line"] +
+        ", ch: " + window.editor.getDoc().getCursor()["ch"];
+    document.getElementById("abspos").innerHTML = "absolute position: " +
+        window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
 });
 
 window.editor.on('change', (editor, obj) => {
-    document.getElementById("lastchange").innerHTML = "Last change: ";
-    if (obj["origin"] === "+input") {
-        document.getElementById("lastchange").innerHTML += "+input ";
-        document.getElementById("lastchange").innerHTML += obj["text"];
-    } else if (obj["origin"] === "+delete") {
-        document.getElementById("lastchange").innerHTML += "+delete ";
-        document.getElementById("lastchange").innerHTML += obj["removed"];
+    document.getElementById("lastchange").innerHTML =
+        (
+            `Last change metadata: \
+            \n\tFROM:${window.editor.getDoc().indexFromPos(obj.from)}\
+            \n\tTO:${window.editor.getDoc().indexFromPos(obj.to)}\
+            \n\tTEXT:${obj.text}\
+            \n\tREMOVED:${obj.removed}\
+            \n\tOPTYPE:${obj.origin}`
+        );
+    var seqops = -1;
+    var fromAbs = window.editor.getDoc().indexFromPos(obj.from);
+    console.log("fromAbs is" + fromAbs);
+    var toAbs = obj.removed.length;
+    var insertedText = obj.text;
+    // var removedText = obj.removed;
+
+    if (obj.origin === "+delete") {
+        seqops = new ops.generateSeqOpsForDelete(fromAbs, toAbs);
+        // console.log("DELETE SSEQ OP IS: " + seqops.toString());
+    } else if (obj.origin === "+input") {
+        seqops = new ops.generateSeqOpsForInsert(fromAbs, insertedText.reduce(
+            (a, b) => a + b, ""
+        ));
+    } else {
+        console.log("unsupported operation!");
+        assertion.assert(true, false);
     }
-    console.log(obj);
+    var rops = curPeerWrapper.crdt.applyLocal(seqops);
+    // console.log("remote ops" + rops.toString());
+    // for (var op of seqops) {
+    //     curPeerWrapper.crdt.applyLocal(op)
+    // }
+    console.log(`at this point, the crdt looks like: \n\t\
+        ${curPeerWrapper.crdt.toString()}`);
 });
 
 function getPos() {

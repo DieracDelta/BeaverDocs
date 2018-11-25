@@ -48,6 +48,7 @@ RSTReplica.prototype = {
         // }
         var insNode = new RSTNode.RSTNode(op.vTomb, op.contents, null, null, false, null)
         var refNode, nextNode, refTree;
+        // console.log("insert node: " + insNode.toString());
 
         if (op.vPos === null) {
             refNode = this.head;
@@ -61,6 +62,11 @@ RSTReplica.prototype = {
         // }
 
         nextNode = refNode.nextLink;
+        // if (nextNode !== null) {
+        //     console.log("next node: " + nextNode.toString());
+        // } else {
+        //     console.log("next node is null");
+        // }
         while (nextNode !== null) {
             // console.log("next node: " + nextNode.toString());
             // TODO add into while statement :/
@@ -72,7 +78,14 @@ RSTReplica.prototype = {
         }
 
         refTree = refNode.getNextAliveLinkedListNode();
+        // if (refTree !== null) {
+        //     console.log("ref Tree: " + refTree.toString());
 
+        // } else {
+        //     console.log("NULLNULL");
+        // }
+
+        // console.log("inserted node: " + insNode.toString());
         this.insertInLocalTree(refTree, insNode);
 
         insNode.nextLink = nextNode;
@@ -251,8 +264,11 @@ RSTReplica.prototype = {
             tree = nodeOld.idTree;
         }
 
+        // console.log("TREE IS: " + tree);
+
         // TODO is null case here taken care of?
         newTree = new bbt.BalancedBinaryTree(nodeNew, null, null, null);
+        // console.log("new tree size: " + newTree.length);
 
         var rootIsNull = this.root === null;
         if (rootIsNull || (nodeOld !== null && nodeOld === this.head)) {
@@ -273,8 +289,12 @@ RSTReplica.prototype = {
                 }
             }
         } else if (nodeOld === null) {
+            // console.log("hi");
+            // console.log("root: " + this.root.prettyPrint());
             var mostRight = this.findMostRight(this.root, 0);
-            assertion.assertNotEqual(newTree, mostRight);
+            // console.log("a is : " + mostRight.rep.toString());
+            // console.log("most right len: " + mostRight.length);
+            // assertion.assertNotEqual(newTree, mostRight);
             mostRight.rightChild = newTree;
             if (newTree !== null) {
                 newTree.parent = mostRight;

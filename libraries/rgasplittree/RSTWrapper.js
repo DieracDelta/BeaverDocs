@@ -3,6 +3,7 @@ const s3v = require('../vectorclock/s3vector');
 const Ops = require('../opTypes/Ops');
 const Replica = require('./RSTReplica');
 const RSTNode = require('./RSTNode');
+const assertion = require('../assertions');
 
 
 // intuitively this wrapers the replica and performs the necessary insortion/deletion logic
@@ -18,14 +19,20 @@ RSTWrapper.prototype = {
     // op: SeqOp
     // returns list of RSTops to broadcast to replicas
     applyLocal: function (op) {
+        // console.log("222APPLYING INSERT!!")
+        // console.log("OP to apply locally: " + op.toString());
         this.checkRep();
         // TODO deal with other cases
         switch (op.opType) {
             case Ops.opEnum.INSERT_OP:
+                // console.log("APPLYING INSERT!!")
                 return this.localInsert(op);
             case Ops.opEnum.DELETE_OP:
+                // console.log("APPLYING DELETE!!")
                 return this.localDelete(op);
             default:
+                // console.log("FAILL!! with optype: " + op.opType)
+                assertion.assert(false, true);
                 return null;
         }
     },
@@ -52,6 +59,7 @@ RSTWrapper.prototype = {
             );
         this.replica.apply(rstOp);
         this.checkRep();
+        // console.log("returning: " + rstOp.toString());
         return [rstOp];
     },
     // takes a sequence operation to apply to local replica
@@ -76,7 +84,7 @@ RSTWrapper.prototype = {
                 endPos.offset, 0, 0
             );
             this.replica.apply(rOp);
-            console.log("1: replica looks like: " + this.replica.toString());
+            // console.log("1: replica looks like: " + this.replica.toString());
             listOfOps.push(rOp);
         } else {
             var temp = startNode.key;
@@ -88,7 +96,7 @@ RSTWrapper.prototype = {
             );
             // console.log("YEEEET");
             this.replica.apply(rOp);
-            console.log("2: replica looks like: " + this.replica.toString());
+            // console.log("2: replica looks like: " + this.replica.toString());
             listOfOps.push(rOp);
 
             var tempNode = startNode.getNextAliveLinkedListNode();
@@ -107,7 +115,7 @@ RSTWrapper.prototype = {
                 // console.log("3: operation to apply: " + rOp2.toString());
 
                 this.replica.apply(rOp2);
-                console.log("3: replica looks like: " + this.replica.toString());
+                // console.log("3: replica looks like: " + this.replica.toString());
                 listOfOps.push(rOp2);
                 tempNode = tempNode.getNextAliveLinkedListNode();
             }
@@ -123,7 +131,7 @@ RSTWrapper.prototype = {
                 // console.log("4: operation to apply: " + rOp3.toString());
                 // assertion.assert(false);
                 this.replica.apply(rOp3);
-                console.log("4: replica looks like: " + this.replica.toString());
+                // console.log("4: replica looks like: " + this.replica.toString());
                 listOfOps.push(rOp3);
             }
         }

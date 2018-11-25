@@ -1,6 +1,8 @@
 const generate = require('nanoid/generate');
 const peerjs = require('peerjs');
 const PORT = 2718;
+const crdt = require('../libraries/rgasplittree/RSTWrapper');
+const replica = require("../libraries/rgasplittree/RSTReplica");
 
 // TODO things to implement
 // shared list of all peers
@@ -8,11 +10,8 @@ const PORT = 2718;
 // TODO message type enum
 // TODO can't establish connection with yourself
 
-function yeet () {
-    console.log("yeet");
-}
-
 function PeerWrapper() {
+    this.crdt = new crdt.RSTWrapper(new replica.RSTReplica(), 0);
     this.sid = generate('0123456789', 10)
     this.peerId = new peerjs(this.sid, {
         // host: '10.250.0.18',
@@ -44,10 +43,10 @@ function PeerWrapper() {
 PeerWrapper.prototype = {
     // connect to peer with id
     // id: ten digit integer
-    connectSet: function(peerList){
+    connectSet: function (peerList) {
         console.log("checking peer set")
         for (var i = 0; i < peerList.length; i++) {
-            if(!this.indirectlyConnectedPeers.includes(peerList[i])){
+            if (!this.indirectlyConnectedPeers.includes(peerList[i])) {
                 console.log(`i is: ${i}, peerlist of is: ${peerList[i]}`);
                 this.connect(peerList[i]);
             }
@@ -110,7 +109,7 @@ PeerWrapper.prototype = {
             document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
             window.editor.setValue(JSON.stringify(jsonData));
             console.log(`THE PROTOTYPE IS: ${this.prototype}`);
-            if(jsonData.MessageType===MessageType.PeerListUpdate){
+            if (jsonData.MessageType === MessageType.PeerListUpdate) {
                 this.connectSet(jsonData.MessageData);
             }
         });
@@ -128,7 +127,7 @@ PeerWrapper.prototype = {
             // this.PrettyPrintDirectPeerList();
         });
     },
-    broadcastPeerList: function() {
+    broadcastPeerList: function () {
         console.log("broadcasting list")
         this.broadcast({
             MessageType: MessageType.PeerListUpdate,
@@ -148,24 +147,23 @@ PeerWrapper.prototype = {
 //     }
 //     return _union;
 // }
-function stringifyIfObject(obj){
-    if(typeof obj == "object")
+function stringifyIfObject(obj) {
+    if (typeof obj == "object")
         return JSON.stringify(obj);
-    else{
+    else {
         alert("found already stringified object")
         return obj;
     }
 }
 
-function random_item(items)
-{ 
-return items[Math.floor(Math.random()*items.length)];    
+function random_item(items) {
+    return items[Math.floor(Math.random() * items.length)];
 }
 
 // operation types
 var MessageType = {
-    "PeerListUpdate" : 0,
-    "BroadcastUpdate" : 1
+    "PeerListUpdate": 0,
+    "BroadcastUpdate": 1
 }
 
 Object.freeze(MessageType);

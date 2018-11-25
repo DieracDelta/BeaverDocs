@@ -18,7 +18,7 @@ Object.freeze(opEnum);
 // vpos: position s3vec
 // vTomb: tombstone s3vec
 // offsetStart: Starting offset (type int)
-// offsetStart: ending offset (type int)
+// offsetEnd: ending offset (type int)
 // pos: position (type int)
 // len: length (type int)
 function RSTOp(opType, contents, vPos, vTomb, offsetStart, offsetEnd, pos, len) {
@@ -41,8 +41,10 @@ RSTOp.prototype = {
         if (this.opType === opEnum.DELETE_OP) {
             operationType = "DELETE"
         }
+        var vpos = (this.vPos !== null) ? this.vPos.toString() : null;
+        var vtomb = (this.vTomb !== null) ? this.vTomb.toString() : null;
         return `RSTOP:\n\top type:${operationType}\n\tcontents: ${this.contents}\
-        \n\tvPos:${this.vPos.toString()}\n\tvTomb:${this.vTomb.toString()}\
+        \n\tvPos:${vpos}\n\tvTomb:${vtomb}\
         \n\toffsetStart:${this.offsetStart}\n\toffsetEnd:${this.offsetEnd}\
         \n\tpos:${this.pos}
         \n\tlen:${this.len}`;
@@ -60,6 +62,16 @@ function SeqOp(opType, contents, pos, arg) {
 SeqOp.prototype = {
     deepCopy: function () {
         return new SeqOp(this.opType, this.contents.slice(), this.pos, this.arg);
+    },
+    toString: function () {
+        var operationType = "INSERT"
+        if (this.opType === opEnum.DELETE_OP) {
+            operationType = "DELETE"
+        }
+        return `SEQOP:\n\top type:${operationType}\n\t\
+        contents: ${this.contents}\
+        \n\tpos:${this.pos}
+        \n\tlen:${this.arg}`;
     }
 }
 
@@ -68,7 +80,12 @@ SeqOp.prototype = {
 // integer position
 // string contents
 function generateSeqOpsForInsert(position, contents) {
-    return new SeqOp(opEnum.INSERT_OP, contents.split(""), position, 0);
+    console.log("the contents are" + typeof (contents));
+    var rVal = new SeqOp(opEnum.INSERT_OP, contents.split(""),
+        position, contents.split("").length
+    );
+    console.log("op is: " + rVal.toString());
+    return rVal;
 }
 
 // integer position

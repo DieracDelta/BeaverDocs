@@ -66,21 +66,84 @@ const wrapper = require('./RSTWrapper');
 
 // });
 
-test("testing RSTWrapper deletes local operations", () => {
-    var insertOp1 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'], 0, 10);
+// test("testing RSTWrapper deletes local operations", () => {
+//     var insertOp1 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'], 0, 10);
+//     var test = new wrapper.RSTWrapper(new replica.RSTReplica(), 0);
+//     test.applyLocal(insertOp1);
+//     var insertOp2 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['2', '8'], 2, 2);
+//     test.applyLocal(insertOp2);
+//     expect(test.toString()).toBe("ab28cdefghij")
+//     var insertOp3 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['7', '3'], 10, 2);
+//     // console.log("before third insert");
+//     test.applyLocal(insertOp3);
+//     expect(test.toString()).toBe("ab28cdefgh73ij");
+//     // console.log(test.replica.root.prettyPrint());
+//     // console.log("length" + test.replica.root.rightChild.rightChild.leftChild.length);
+//     // console.log("rep:" + test.replica.root.rightChild.rightChild.leftChild.rep.toString());
+//     var delOp1 = new ops.SeqOp(ops.opEnum.DELETE_OP, null, 3, 8);
+//     test.applyLocal(delOp1);
+//     expect(test.toString()).toBe("ab23ij");
+// });
+
+// test("YAT yet antoher etest", () => {
+//     var test = new wrapper.RSTWrapper(new replica.RSTReplica(), 0);
+//     var insertOp1 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['h'], 0, 1);
+//     test.localInsert(insertOp1);
+//     // console.log("insert Op 1: " + insertOp1.toString());
+//     // console.log("insert test 1 gives out: " + test.toString());
+//     var insertOp2 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['e'], 1, 2);
+//     // console.log("insert Op 2: " + insertOp2.toString());
+//     test.localInsert(insertOp2);
+//     // console.log("insert test 2 gives out: " + test.toString());
+//     var insertOp3 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['l'], 2, 3);
+//     // console.log("insert Op 3: " + insertOp3.toString());
+//     test.localInsert(insertOp3);
+//     // console.log("insert test 3 gives out: " + test.toString());
+//     console.log("starting insert 4");
+//     var insertOp4 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['l'], 3, 4);
+//     // console.log("root: " + test.replica.root.length);
+//     // console.log("right child: " + test.replica.root.rightChild.length);
+//     // console.log("right right child : " + test.replica.root.rightChild.rightChild.length);
+//     // TODO all the tree reps and the tree is the same
+//     // so the error literally probablly happens on insert op 4
+//     // console.log(test.replica.root.prettyPrint());
+//     test.localInsert(insertOp4);
+//     expect(test.toString() == "hell");
+// });
+
+test("oh here comes another test", () => {
     var test = new wrapper.RSTWrapper(new replica.RSTReplica(), 0);
+    var insertOp1 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['h'], 0, 1);
+    var insertOp2 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['e'], 1, 1);
+    var insertOp3 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['l'], 2, 1);
+    var insertOp4 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['l'], 3, 1);
+    var insertOp5 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['o'], 4, 1);
+    var insertOp6 = new ops.SeqOp(ops.opEnum.INSERT_OP, [' '], 5, 1);
+    var insertOp7 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['w'], 6, 1);
+    var insertOp8 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['o'], 7, 1);
+    var insertOp9 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['r'], 8, 1);
+    var insertOp10 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['l'], 9, 1);
+    var insertOp11 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['d'], 10, 1);
+    var insertOp12 = new ops.SeqOp(ops.opEnum.INSERT_OP, [' '], 11, 1);
+    var insertOp13 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['<'], 12, 1);
+    var insertOp14 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['3'], 13, 1);
     test.applyLocal(insertOp1);
-    var insertOp2 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['2', '8'], 2, 2);
     test.applyLocal(insertOp2);
-    expect(test.toString()).toBe("ab28cdefghij")
-    var insertOp3 = new ops.SeqOp(ops.opEnum.INSERT_OP, ['7', '3'], 10, 2);
-    // console.log("before third insert");
     test.applyLocal(insertOp3);
-    expect(test.toString()).toBe("ab28cdefgh73ij");
-    // console.log(test.replica.root.prettyPrint());
-    // console.log("length" + test.replica.root.rightChild.rightChild.leftChild.length);
-    // console.log("rep:" + test.replica.root.rightChild.rightChild.leftChild.rep.toString());
-    var delOp1 = new ops.SeqOp(ops.opEnum.DELETE_OP, null, 3, 8);
-    test.applyLocal(delOp1);
-    expect(test.toString()).toBe("ab23ij");
+    test.applyLocal(insertOp4);
+    test.applyLocal(insertOp5);
+    test.applyLocal(insertOp6);
+    test.applyLocal(insertOp7);
+    test.applyLocal(insertOp8);
+    test.applyLocal(insertOp9);
+    test.applyLocal(insertOp10);
+    test.applyLocal(insertOp11);
+    test.applyLocal(insertOp12);
+    test.applyLocal(insertOp13);
+    test.applyLocal(insertOp14);
+    console.log("yeet" + test.toString());
+    expect(test.toString()).toBe("hello world <3");
+    var delOp = new ops.SeqOp(ops.opEnum.DELETE_OP, null, 6, 6);
+    test.applyLocal(delOp);
+    console.log("post delete: " + test.toString());
 });
