@@ -18,8 +18,8 @@ function PeerWrapper(editor) {
     console.log("VECTOR CLOCK IS: " + this.crdt.siteVC.toString());
 
     this.peer = new peerjs(this.sid, {
-        host: '10.250.0.18',
-        // host: 'localhost',
+        // host: '10.250.0.18',
+        host: 'localhost',
         port: PORT,
         path: '/peerjs'
     });
@@ -126,6 +126,7 @@ PeerWrapper.prototype = {
                     if (anOpSerialized.vPos === null) {
                         vPos = null
                     } else {
+                        console.log("Y E E T");
                         vPos.offset = anOpSerialized.vPos.offset;
                         vPos.sum = anOpSerialized.vPos.sum;
                         vPos.sid = anOpSerialized.vPos.sid;
@@ -151,17 +152,19 @@ PeerWrapper.prototype = {
                     );
 
                     this.crdt.integrateRemote(anOp);
+                    var oldCursorPos = this.editor.indexFromPos(this.editor.getCursor());
+                    var opPos = (vPos !== null) ? this.crdt.replica.getOpPos(vPos) : oldCursorPos;
+                    this.editor.setValue(this.crdt.toString());
+                    if (opPos < oldCursorPos) {
+                        if (anOpSerialized == ops.opEnum.INSERT_OP) {
+                            this.editor.setCursor(oldCursorPos + anOpSerialized.contents.length);
+                        } else {
+                            this.editor.setCursor(oldCursorPos - (anOpSerialized.offsetEnd - anOpSerialized.offsetStart))
+                        }
+                    } else {
+                        oldCursorPos = this.editor.setCursor(oldCursorPos);
+                    }
                 }
-                var oldCursorPos = this.editor.indexFromPos(this.editor.getCursor());
-                this.editor.setValue(this.crdt.toString());
-                // asdf
-                // TODO
-                // var newCursorPos = oldCursorPos;
-                // if(anOpSerialized.opType === ops.opEnum.INSERT_OP){
-                //     newCursorPos += anOpSerialized.cont
-
-                // }
-                this.editor.setCursor(oldCursorPos);
             }
         });
         conn.on('close', () => {

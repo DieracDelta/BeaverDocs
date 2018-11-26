@@ -55,7 +55,7 @@ RSTWrapper.prototype = {
         var rstOp =
             new Ops.RSTOp(
                 Ops.opEnum.INSERT_OP, op.contents, vPos, vTomb, pos.offset, 0,
-                op.pos, 0
+                op.pos, op.length
             );
         this.replica.apply(rstOp);
         this.checkRep();

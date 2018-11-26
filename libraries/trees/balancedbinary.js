@@ -100,9 +100,9 @@ BalancedBinaryTree.prototype = {
                 if (j === null) {
                     level_str += " ".repeat(((node_width / 2) | 0) - 1) + "-" + " ".repeat(((node_width / 2) | 0));
                 } else if (j.rep.isTombstone) {
-                    level_str += " ".repeat(((node_width / 2) | 0) - 1) + "d" + " ".repeat(((node_width / 2) | 0));
+                    level_str += " ".repeat(((node_width / 2) | 0) - 1) + `d: ${j.length} ${j.rep.content} ${j.rep.length}` + " ".repeat(((node_width / 2) | 0));
                 } else {
-                    level_str += " ".repeat(((node_width / 2) | 0) - 1) + "a" + " ".repeat(((node_width / 2) | 0));
+                    level_str += " ".repeat(((node_width / 2) | 0) - 1) + `a: ${j.length} ${j.rep.content} ${j.rep.length}` + " ".repeat(((node_width / 2) | 0));
                 }
             }
             rVal = level_above_str + "\n" + level_str + "\n" + rVal;

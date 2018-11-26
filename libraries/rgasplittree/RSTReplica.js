@@ -9,7 +9,6 @@ const printCall = false;
 const findPositionInLocalTreeDebug = false;
 
 function RSTReplica() {
-    this.ntc = 0;
     // TODO create your own version of dictionary that hashes s3vectors -> nodes
     this.dict = new hashmap.HashMap();
     // head of the linked list
@@ -38,17 +37,8 @@ RSTReplica.prototype = {
     // returns boolean indicating success
     remoteInsert: function (op) {
         this.checkRep();
-        // if (this.root === null) {
-        //     console.log("root is null");
-        // } else {
-        //     console.log("root len: " + this.root.rep.toString());
-        // }
-        // if (printCall) {
-        // console.log("called remote insert\n");
-        // }
         var insNode = new RSTNode.RSTNode(op.vTomb, op.contents, null, null, false, null)
         var refNode, nextNode, refTree;
-        // console.log("insert node: " + insNode.toString());
 
         if (op.vPos === null) {
             refNode = this.head;
@@ -57,18 +47,9 @@ RSTReplica.prototype = {
             refNode = this.getSuitableNode(this.dict.get(op.vPos.hash()), netOffset);
             this.remoteSplit(refNode, netOffset);
         }
-        // if (refNode.idTree !== null && refNode.idTree.rightChild !== null) {
-        //     console.log("ref Node: " + refNode.idTree.rightChild.rep.toString());
-        // }
 
         nextNode = refNode.nextLink;
-        // if (nextNode !== null) {
-        //     console.log("next node: " + nextNode.toString());
-        // } else {
-        //     console.log("next node is null");
-        // }
         while (nextNode !== null) {
-            // console.log("next node: " + nextNode.toString());
             // TODO add into while statement :/
             if (s3vector.preceeds(nextNode.key, op.vTomb)) {
                 break;
@@ -78,13 +59,6 @@ RSTReplica.prototype = {
         }
 
         refTree = refNode.getNextAliveLinkedListNode();
-        // if (refTree !== null) {
-        //     console.log("ref Tree: " + refTree.toString());
-
-        // } else {
-        //     console.log("NULLNULL");
-        // }
-
         // console.log("inserted node: " + insNode.toString());
         this.insertInLocalTree(refTree, insNode);
 
@@ -98,7 +72,6 @@ RSTReplica.prototype = {
     remoteDelete: function (op) {
         this.checkRep();
         // TODO delete this
-        this.ntc++;
         if (printCall) {
             console.log("called remote delete\n");
         }
@@ -498,6 +471,24 @@ RSTReplica.prototype = {
         if (this.root !== null) {
             this.root.checkRep();
         }
+    },
+    // this is actually slow af, you should be using the tree ...
+    // key is a s3vector
+    // this is still broken if you end up doing blocks 
+    // (morally speaking you'll need to subtract from most recent block)
+    getOpPos: function (key) {
+        var offset = 0;
+        var curNode = this.head;
+        while (curNode !== null) {
+            if (curNode.key !== null && s3vector.equal(curNode.key, key)) {
+                return offset;
+            }
+            if (!curNode.isTombstone) {
+                offset += curNode.content.length;
+            }
+            curNode = curNode.nextLink;
+        }
+        return offset;
     }
 }
 
