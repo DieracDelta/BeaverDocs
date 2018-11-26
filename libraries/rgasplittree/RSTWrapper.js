@@ -141,6 +141,7 @@ RSTWrapper.prototype = {
     // integrate a remote operation into replica
     // op: RSTOp
     integrateRemote: function (op) {
+        console.log(op.vTomb);
         this.localIncrement(op.vTomb.sid);
         this.replica.apply(op);
     },

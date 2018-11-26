@@ -147,3 +147,40 @@ test("oh here comes another test", () => {
     test.applyLocal(delOp);
     console.log("post delete: " + test.toString());
 });
+
+test("integration testing between multiple peers", () => {
+    var test1 = new wrapper.RSTWrapper(new replica.RSTReplica(), 0);
+    var test2 = new wrapper.RSTWrapper(new replica.RSTReplica(), 1);
+    var localInsertOps = new ops.generateSeqOpsForInsert(0, "hello world <3");
+    var localDeleteOps = new ops.generateSeqOpsForDelete(6, 6);
+    var remoteInsertOps = test1.applyLocal(localInsertOps);
+    console.log(remoteInsertOps);
+    test2.integrateRemote(remoteInsertOps[0]);
+    expect(test2.toString()).toBe("hello world <3");
+    var remoteDeleteOps = test2.applyLocal(localDeleteOps);
+    test1.integrateRemote(remoteDeleteOps[0]);
+    expect(test1.toString()).toBe("hello <3");
+
+    // opposite order
+    test3 = new wrapper.RSTWrapper(new replica.RSTReplica(), 2);
+    test3.integrateRemote(remoteInsertOps[0]);
+    test3.integrateRemote(remoteDeleteOps[0]);
+    console.log(test3.toString());
+
+    // different place deletes
+    var localDelOp1 = new ops.generateSeqOpsForDelete(0, 1);
+    var localDelOp2 = new ops.generateSeqOpsForDelete(3, 1);
+    var localInsOp1 = new ops.generateSeqOpsForInsert(3, "f");
+    var ld1 = test1.applyLocal(localDelOp1);
+    var ld2 = test2.applyLocal(localDelOp2);
+    var li1 = test1.applyLocal(localInsOp1);
+
+    console.log(ld1.toString());
+    console.log(ld2.toString());
+
+    // nice
+    test3.integrateRemote(ld1[0]);
+    test3.integrateRemote(ld2[0]);
+    test3.integrateRemote(li1[0]);
+    console.log(test3.toString());
+})
