@@ -152,9 +152,9 @@ PeerWrapper.prototype = {
 
                     this.crdt.integrateRemote(anOp);
                 }
+                var oldCursorPos = this.editor.indexFromPos(this.editor.getCursor());
                 this.editor.setValue(this.crdt.toString());
                 // asdf
-                var oldCursorPos = this.editor.getCursor().indexFromPos();
                 // TODO
                 // var newCursorPos = oldCursorPos;
                 // if(anOpSerialized.opType === ops.opEnum.INSERT_OP){

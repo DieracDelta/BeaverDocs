@@ -42,7 +42,8 @@ window.editor.on('change', (editor, obj) => {
         ));
     } else {
         console.log("unsupported operation!");
-        assertion.assert(true, false);
+        //assertion.assert(true, false);
+	return;
     }
     var rops = curPeerWrapper.crdt.applyLocal(seqops);
     var broadcastObj = {
