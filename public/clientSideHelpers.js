@@ -27,11 +27,6 @@ function PeerWrapper(editor) {
     // mapping from id to dataConnection
     this.directlyConnectedPeers = {};
 
-    // peers viewed
-    // {
-    //  peerId: timestamp,
-    //  ...
-    // }
     this.view = {};
     this.viewSize = 2; // how many of the most recently seen peers to keep after a merge
     this.viewTimeInterval = 1000; // milliseconds
@@ -158,6 +153,15 @@ PeerWrapper.prototype = {
                     this.crdt.integrateRemote(anOp);
                 }
                 this.editor.setValue(this.crdt.toString());
+                // asdf
+                var oldCursorPos = this.editor.getCursor().indexFromPos();
+                // TODO
+                // var newCursorPos = oldCursorPos;
+                // if(anOpSerialized.opType === ops.opEnum.INSERT_OP){
+                //     newCursorPos += anOpSerialized.cont
+
+                // }
+                this.editor.setCursor(oldCursorPos);
             }
         });
         conn.on('close', () => {
