@@ -82,7 +82,7 @@ document.getElementById('join').onclick = function () {
             curPeerWrapper.connect(inputID);
             // curPeerWrapper.PrettyPrintDirectPeerList();
             console.log("successfully connect to " + inputID);
-            document.getElementById('join').disabled = true;
+            //document.getElementById('join').disabled = true;
         }
     }
 }
