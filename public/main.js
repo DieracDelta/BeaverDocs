@@ -45,6 +45,13 @@ window.editor.on('change', (editor, obj) => {
         assertion.assert(true, false);
     }
     var rops = curPeerWrapper.crdt.applyLocal(seqops);
+    var broadcastObj = {
+        MessageType: Helpers.MessageType.SequenceOp,
+        RemoteOps: rops,
+        // TODO why the hell is this null ??
+        VectorClock: curPeerWrapper.siteVC
+    };
+    curPeerWrapper.broadcast(broadcastObj);
     // console.log("remote ops" + rops.toString());
     // for (var op of seqops) {
     //     curPeerWrapper.crdt.applyLocal(op)
@@ -59,7 +66,7 @@ function getPos() {
 
 var curPeerWrapper = null;
 document.getElementById('init').onclick = function () {
-    curPeerWrapper = new Helpers.PeerWrapper();
+    curPeerWrapper = new Helpers.PeerWrapper(window.editor);
     document.getElementById('init').disabled = true;
     document.getElementById('myID').innerHTML = String(curPeerWrapper.sid);
 }

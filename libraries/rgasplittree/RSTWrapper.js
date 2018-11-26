@@ -11,7 +11,7 @@ function RSTWrapper(replica, sid) {
     this.replica = replica;
     // sid aka replica number
     this.sid = sid;
-    this.siteVC = new vc.VectorClock([]);
+    this.siteVC = new vc.VectorClock([this.sid]);
 }
 
 RSTWrapper.prototype = {

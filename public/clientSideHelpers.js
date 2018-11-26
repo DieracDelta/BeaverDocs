@@ -1,5 +1,7 @@
 const crdt = require('../libraries/rgasplittree/RSTWrapper');
 const replica = require("../libraries/rgasplittree/RSTReplica");
+const ops = require("../libraries/opTypes/Ops");
+const s3v = require("../libraries/vectorclock/s3vector");
 const generate = require('nanoid/generate');
 const peerjs = require('peerjs');
 const PORT = 2718;
@@ -9,9 +11,11 @@ const PORT = 2718;
 // TODO message type enum
 // TODO can't establish connection with yourself
 
-function PeerWrapper() {
+function PeerWrapper(editor) {
+    this.editor = editor;
     this.sid = generate('0123456789', 10);
-    this.crdt = new crdt.RSTWrapper(new replica.RSTReplica(), 0);
+    this.crdt = new crdt.RSTWrapper(new replica.RSTReplica(), this.sid);
+    console.log("VECTOR CLOCK IS: " + this.crdt.siteVC.toString());
 
     this.peer = new peerjs(this.sid, {
         // host: '10.250.0.18',
@@ -75,6 +79,7 @@ PeerWrapper.prototype = {
         var conn = this.peer.connect(String(id));
         this.addConnectionListeners(conn, id);
     },
+    // TODO should probably fix this...
     PrettyPrintDirectPeerList: function () {
         document.getElementById('directPeerList').innerHTML =
             Object.keys(this.directlyConnectedPeers).reduce((a, c) => a + "\n\t" + c, "Directly Connected Peers:");
@@ -82,7 +87,8 @@ PeerWrapper.prototype = {
     broadcast: function (data) {
         for (apeerID of Object.keys(this.directlyConnectedPeers)) {
             console.log("broadcasting" + JSON.stringify(data))
-            console.log(this.directlyConnectedPeers[apeerID].open);
+            // console.log(this.directlyConnectedPeers[apeerID].open);
+            // TODO does this need to be stringified
             this.directlyConnectedPeers[apeerID].send(data);
         }
     },
@@ -112,6 +118,46 @@ PeerWrapper.prototype = {
             document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
             if (jsonData.MessageType === MessageType.PeerListUpdate) {
                 this.connectSet(jsonData.messageData);
+            } else if (jsonData.MessageType === MessageType.SequenceOp) {
+                // console.log("YEEEET * 69");
+                // TODO this is where the ordering logic should go 
+                // TODO this doesn't really make it work on multiple lines (only one) rn
+                // TODO batching...
+                // (shouldn't be the way it is rn)
+                // use vector clock (this.VectorClock)
+                for (anOpSerialized of jsonData.RemoteOps) {
+                    var anOp = null;
+                    var vPos = new s3v.s3Vector(null, -1, -1);
+                    if (anOpSerialized.vPos === null) {
+                        vPos = null
+                    } else {
+                        vPos.offset = anOpSerialized.vPos.offset;
+                        vPos.sum = anOpSerialized.vPos.sum;
+                        vPos.sid = anOpSerialized.vPos.sid;
+                    }
+                    var vTomb = new s3v.s3Vector(null, -1, -1);
+                    if (anOpSerialized.vTomb === null) {
+                        vTomb = null
+                    } else {
+                        vTomb.offset = anOpSerialized.vTomb.offset;
+                        vTomb.sum = anOpSerialized.vTomb.sum;
+                        vTomb.sid = anOpSerialized.vTomb.sid;
+                    }
+
+                    anOp = new ops.RSTOp(
+                        anOpSerialized.opType,
+                        anOpSerialized.contents,
+                        vPos,
+                        vTomb,
+                        anOpSerialized.offsetStart,
+                        anOpSerialized.offsetEnd,
+                        anOpSerialized.pos,
+                        anOpSerialized.len
+                    );
+
+                    this.crdt.integrateRemote(anOp);
+                }
+                this.editor.setValue(this.crdt.toString());
             }
         });
         conn.on('close', () => {
@@ -193,7 +239,8 @@ return items[Math.floor(Math.random()*items.length)];
 // operation types
 var MessageType = {
     "PeerListUpdate": 0,
-    "BroadcastUpdate": 1
+    "BroadcastUpdate": 1,
+    "SequenceOp": 2
 }
 Object.freeze(MessageType);
 

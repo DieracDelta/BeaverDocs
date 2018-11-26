@@ -46,6 +46,13 @@ VectorClock.prototype = {
         var rVal = new VectorClock([]);
         rVal.processVector(this);
         return rVal;
+    },
+    toString: function () {
+        var rStr = ""
+        for (aId of Object.keys(this.mapping)) {
+            rStr += `\n\t ID: ${aId}, Value: ${this.mapping[aId]}`
+        }
+        return rStr;
     }
 
 }

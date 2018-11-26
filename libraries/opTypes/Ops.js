@@ -29,7 +29,9 @@ function RSTOp(opType, contents, vPos, vTomb, offsetStart, offsetEnd, pos, len) 
     this.offsetStart = offsetStart;
     this.offsetEnd = offsetEnd;
     this.pos = pos;
-    this.len = len;
+    if (contents !== null) {
+        this.len = contents.length;
+    }
 }
 
 RSTOp.prototype = {
