@@ -32,10 +32,6 @@ p {
   color: #586C88;
 }
 
-hr{
-
-}
-
 .btn-peer {
   border: none;
   border-left: 1.5em solid #637CEA;
@@ -68,6 +64,7 @@ hr{
 }
 
 .section-mirror {
+  color: #586C88;
   padding: 1em;
   padding-right: 2em;
 }
@@ -121,17 +118,26 @@ hr{
   padding: 1.5em;
 }
 
-.top-color-1 {
-  background-color: #E5E8EE;
-  height: 2.3em;
+.input-join {
+  margin-top: 1.5em;
+  border: none;
+  background-color: transparent;
+  height: 1.5em;
 }
 
-.top-color-2 {
-  background-color: #5F63D4;
-  height: 2.3em;
+.input-join:focus {
+  outline: none;
 }
 
-.top-color-3 {
-  background-color: #809AE5;
-  height: 2.3em;
+.btn-join {
+  background-color: transparent;
+  width: 100%;
+  border: 1.5px solid #293462;
+  padding: 0.3em;
+
 }
+
+.btn-join:focus {
+  outline: none;
+}
+

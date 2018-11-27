@@ -42,6 +42,8 @@
             <button class="btn-peer">Red Panda</button>
           </div>
         </div>
+        <textarea id="joinIDInput" class="input-join" placeholder="+ Enter join ID"></textarea>
+        <button type="button" id="join" class="btn-join"> Join Peer</button>
       </div>
       <div class="col-xs-10 main-content">
         <div class="main-header">
@@ -60,73 +62,17 @@
   </div>
 </div>
 
-  <div class="section-top">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-xs-9 top-color-1">
-        </div>
-        <div class="col-xs-2 top-color-2">
-        </div>
-        <div class="col-xs-1 top-color-3">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section-header">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-2">
-        </div>
-        <div class="col-xs-12 col-sm-8">
-          <h1>MITDocs</h1>
-          <h3>Private and secure real-time collaborative text editing</h3>
-        </div>
-        <div class="col-sm-2">
-        </div>
-      </div>
-    </div>
-  </div>
-
-<!--   <div id="lastchange">
-  </div>
-
-  <div id="relpos">
-  </div>
-
-  <div id="abspos">
-  </div> -->
-
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-xs-12 col-sm-2 section-peers">
-        <h2 class="uppercase">You</h1>
-          <!-- <button id="myID" class="btn-peer">Wild Fox</button> -->
-          <h2 class="uppercase">Peers</h2>
-<!--             <div id="icon-peer-list">
-              <button class="btn-peer">Wild Fox</button>
-              <button class="btn-peer">Lion</button>
-              <button class="btn-peer">Red Panda</button>
-            </div> -->
-      </div>
-      <div class="col-xs-12 col-sm-10 section-mirror">
-        <textarea id="codemirror-textarea" placeholder="Start typing..."></textarea>
-      </div>
-    </div>
-  </div>
-
-  <button type="button" id="reset"> Rest Connection</button>
+  <button type="button" id="reset"> Reset Connection</button>
   <button type="button" id="init"> Init Peer</button>
-  <button type="button" id="join"> Join Peer</button>
-  <button type="button" id="broadcast"> Broadcast to Peers</button>
-  <textarea id="joinIDInput" placeholder="Enter join ID"></textarea>
+<!--   <button type="button" id="join"> Join Peer</button>
+ -->  <button type="button" id="broadcast"> Broadcast to Peers</button>
+<!--   <textarea id="joinIDInput" placeholder="Enter join ID"></textarea> -->
   <textarea id="codeInput" placeholder="Text Here"></textarea>
   <div>
     recieved broadcasted message:
 
     <div id="broadcasted"></div>
   </div>
-  <!-- <div>Your ID: N/A (press init)</div> -->
   <div id="directPeerList">Directly Connected Peers: </div>
   <div id="errors">Errors: </div>
 
