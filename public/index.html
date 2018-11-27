@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MITDocs</title>
+  <title>MITdocs</title>
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
     crossorigin="anonymous">
@@ -24,6 +24,41 @@
 </head>
 
 <body>
+
+<div class="section-container">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-xs-2 side-bar">
+        <div class="user-profile">
+          <span class="user-dot"></span>
+          <h2>You</h2>
+          <p id="myID">uninitialized</p>
+        </div>
+        <div class="peer-list">
+          <h2>Peers</h2>
+          <div id="icon-peer-list">
+            <button class="btn-peer">Wild Fox</button>
+            <button class="btn-peer">Lion</button>
+            <button class="btn-peer">Red Panda</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-10 main-content">
+        <div class="main-header">
+          <h1>MITdocs</h1>
+          <h3>Private and secure real-time collaborative text editing</h3>
+        </div>
+        <hr />
+        <div class="section-mirror">
+          <div id="lastchange"></div>
+          <div id="relpos"></div>
+          <div id="abspos"></div>
+          <textarea id="codemirror-textarea" placeholder="Start typing..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
   <div class="section-top">
     <div class="container-fluid">
@@ -53,29 +88,29 @@
     </div>
   </div>
 
-  <div id="lastchange">
+<!--   <div id="lastchange">
   </div>
 
   <div id="relpos">
   </div>
 
   <div id="abspos">
-  </div>
+  </div> -->
 
   <div class="container-fluid">
     <div class="row">
       <div class="col-xs-12 col-sm-2 section-peers">
         <h2 class="uppercase">You</h1>
-          <button id="myID" class="btn-peer">Wild Fox</button>
-          <h2 class="uppercase">Peers</h1>
-            <div id="icon-peer-list">
+          <!-- <button id="myID" class="btn-peer">Wild Fox</button> -->
+          <h2 class="uppercase">Peers</h2>
+<!--             <div id="icon-peer-list">
               <button class="btn-peer">Wild Fox</button>
               <button class="btn-peer">Lion</button>
               <button class="btn-peer">Red Panda</button>
-            </div>
+            </div> -->
       </div>
       <div class="col-xs-12 col-sm-10 section-mirror">
-        <textarea id="codemirror-textarea" onchange="getPos()"></textarea>
+        <textarea id="codemirror-textarea" placeholder="Start typing..."></textarea>
       </div>
     </div>
   </div>

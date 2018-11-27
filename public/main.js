@@ -5,7 +5,7 @@ const ops = require('../libraries/opTypes/Ops');
 var codemirrorContent = document.getElementById("codemirror-textarea");
 
 window.editor = CodeMirror.fromTextArea(codemirrorContent, {
-    lineNumbers: true
+    lineNumbers: true,
 });
 
 window.editor.on('cursorActivity', (editor) => {
@@ -69,7 +69,7 @@ var curPeerWrapper = null;
 document.getElementById('init').onclick = function () {
     curPeerWrapper = new Helpers.PeerWrapper(window.editor);
     document.getElementById('init').disabled = true;
-    document.getElementById('myID').innerHTML = String(curPeerWrapper.sid);
+    document.getElementById('myID').innerHTML = "id: " + String(curPeerWrapper.sid);
 }
 document.getElementById('join').onclick = function () {
     if (curPeerWrapper === null) {

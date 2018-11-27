@@ -40,6 +40,7 @@ function PeerWrapper(editor) {
     this.peer.on('connection', (conn) => {
         this.directlyConnectedPeers[conn.peer] = conn;
         this.PrettyPrintDirectPeerList();
+        this.IconPrintDirectPeerList();
         console.log("A new person has initiated a connection with you. Their ID is: " + String(conn.peer));
         this.addConnectionListeners(conn, conn.peer);
         this.broadcastPeerList();
@@ -79,6 +80,13 @@ PeerWrapper.prototype = {
         document.getElementById('directPeerList').innerHTML =
             Object.keys(this.directlyConnectedPeers).reduce((a, c) => a + "\n\t" + c, "Directly Connected Peers:");
     },
+    IconPrintDirectPeerList: function () {
+        document.getElementById('icon-peer-list').innerHTML = "";
+        var allKeys = Object.keys(this.directlyConnectedPeers);
+        for (i=0; i < allKeys.length; i++) {
+            document.getElementById('icon-peer-list').innerHTML += '<button class="btn-peer">' + allKeys[i] + '</button>';
+        }
+    },
     broadcast: function (data) {
         for (apeerID of Object.keys(this.directlyConnectedPeers)) {
             console.log("broadcasting" + JSON.stringify(data))
@@ -106,6 +114,7 @@ PeerWrapper.prototype = {
             console.log("connected to " + id);
             this.directlyConnectedPeers[id] = conn;
             this.PrettyPrintDirectPeerList();
+            this.IconPrintDirectPeerList();
             this.updateView(id);
         });
         conn.on('data', (jsonData) => {
@@ -172,11 +181,13 @@ PeerWrapper.prototype = {
             delete this.directlyConnectedPeers[conn.peer]
             console.log(this.directlyConnectedPeers)
             this.PrettyPrintDirectPeerList();
+            this.IconPrintDirectPeerList();
         });
         conn.on('disconnected', () => {
             console.log("got disconnected");
             delete this.directlyConnectedPeers[conn.peer]
             this.PrettyPrintDirectPeerList();
+            this.IconPrintDirectPeerList();
             this.removeFromView(id);
         });
     },

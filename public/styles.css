@@ -1,10 +1,11 @@
 html, body, h1, h2, h3, h4, h5, h6, p {
-  font-family: "Barlow", "Lato", "Helvetica Neue";
+  font-family: "Consolas", "Lato", "Helvetica Neue";
   font-weight: 300;
+  color: #293462;
 }
 
 body {
-  background-color: #F8F8F8;
+  background-color: #FFFFFF;
 }
 
 h1 {
@@ -14,6 +15,7 @@ h1 {
 }
 
 h2 {
+  color: #293462;
   font-size: 1.2em;
   font-weight: 500;
   line-height: 0.5em;
@@ -22,11 +24,21 @@ h2 {
 h3 {
   font-size: 1.1em;
   font-weight: 400;
+  color: #586C88;
+}
+
+p {
+  font-size: 1em;
+  color: #586C88;
+}
+
+hr{
+
 }
 
 .btn-peer {
   border: none;
-  border-left: 1.5em solid #5F63D4;
+  border-left: 1.5em solid #637CEA;
   text-align: left;
   background-color: transparent;
   color: #000000;
@@ -41,7 +53,7 @@ h3 {
 }
 
 .CodeMirror {
-  font-family: "Montserrat", Arial;
+  font-family: "Consolas";
   font-weight: 400;
   font-size: 1.2em;
 }
@@ -71,8 +83,42 @@ h3 {
   padding-right: 0.5em;
 }
 
+.user-profile {
+  width: 100%;
+  text-align: center;
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+
+.user-dot {
+  height: 3.5em;
+  width: 3.5em;
+  background-color: #293462;
+  border-radius: 50%;
+  display: inline-block;
+}
+
 .uppercase {
   text-transform: uppercase;
+}
+
+.main-header {
+  text-align: center;
+  padding-top: 1.5em;
+  padding-bottom: 0.5em;
+  color: #293462;
+}
+
+.main-content {
+  background-color: #FFFFFF;
+  min-height: 100vh;
+  padding: 1.5em;
+}
+
+.side-bar {
+  background-color: #F2F4F7;
+  min-height: 100vh;
+  padding: 1.5em;
 }
 
 .top-color-1 {
