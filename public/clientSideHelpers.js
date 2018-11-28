@@ -11,6 +11,10 @@ const PORT = 2718;
 // TODO message type enum
 // TODO can't establish connection with yourself
 
+const colorList = ["#FF8C9A", "#BF9BD8", "#53CCE0", "#FFE663", "#A2D264", "#22AB9A",
+                    "#637CEA", "#A2BEED", "#FF4D4D", "#4F5882", "#5BBDAE", "#FF0000", 
+                    "#41E58B", "#FFB743", "#6E58FF", "#71899C", "#FF7E43", "#514F5E"];
+
 function PeerWrapper(editor) {
     this.editor = editor;
     this.sid = generate('0123456789', 10);
@@ -27,6 +31,11 @@ function PeerWrapper(editor) {
     // mapping from id to dataConnection
     this.directlyConnectedPeers = {};
 
+    // coloring
+    this.color = "#293462";
+    this.peerColors = {};
+    document.getElementById('user-dot').style.backgroundColor = this.color;
+
     this.view = {};
     this.viewSize = 2; // how many of the most recently seen peers to keep after a merge
     this.viewTimeInterval = 1000; // milliseconds
@@ -39,6 +48,7 @@ function PeerWrapper(editor) {
     });
     this.peer.on('connection', (conn) => {
         this.directlyConnectedPeers[conn.peer] = conn;
+        this.peerColors[conn.peer] = colorList[Math.floor(Math.random() * colorList.length)];
         this.PrettyPrintDirectPeerList();
         this.IconPrintDirectPeerList();
         console.log("A new person has initiated a connection with you. Their ID is: " + String(conn.peer));
@@ -70,6 +80,7 @@ PeerWrapper.prototype = {
             console.log("CLOSE");
             this.directlyConnectedPeers[id].close()
             delete this.directlyConnectedPeers[id];
+            delete this.peerColors[id];
         }
         console.log(this.directlyConnectedPeers)
         var conn = this.peer.connect(String(id));
@@ -84,7 +95,7 @@ PeerWrapper.prototype = {
         document.getElementById('icon-peer-list').innerHTML = "";
         var allKeys = Object.keys(this.directlyConnectedPeers);
         for (i=0; i < allKeys.length; i++) {
-            document.getElementById('icon-peer-list').innerHTML += '<button class="btn-peer">' + allKeys[i] + '</button>';
+            document.getElementById('icon-peer-list').innerHTML += '<button class="btn-peer" style="border-left: 1.5em solid ' + colorList[Math.floor(Math.random() * colorList.length)] + '">' + allKeys[i] + '</button>';
         }
     },
     broadcast: function (data) {
@@ -178,14 +189,16 @@ PeerWrapper.prototype = {
         });
         conn.on('close', () => {
             console.log("closed connection with peer " + conn.peer);
-            delete this.directlyConnectedPeers[conn.peer]
-            console.log(this.directlyConnectedPeers)
+            delete this.directlyConnectedPeers[conn.peer];
+            delete this.peerColors[conn.peer];
+            console.log(this.directlyConnectedPeers);
             this.PrettyPrintDirectPeerList();
             this.IconPrintDirectPeerList();
         });
         conn.on('disconnected', () => {
             console.log("got disconnected");
-            delete this.directlyConnectedPeers[conn.peer]
+            delete this.directlyConnectedPeers[conn.peer];
+            delete this.peerColors[conn.peer];
             this.PrettyPrintDirectPeerList();
             this.IconPrintDirectPeerList();
             this.removeFromView(id);

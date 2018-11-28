@@ -64,7 +64,7 @@ p {
 }
 
 .section-mirror {
-  color: #586C88;
+  color: #B1B8C3;
   padding: 1em;
   padding-right: 2em;
 }
@@ -122,7 +122,7 @@ p {
   margin-top: 1.5em;
   border: none;
   background-color: transparent;
-  height: 1.5em;
+  height: 1.8em;
 }
 
 .input-join:focus {
