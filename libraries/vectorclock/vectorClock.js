@@ -50,6 +50,7 @@ VectorClock.prototype = {
     toString: function () {
         var rStr = ""
         for (aId of Object.keys(this.mapping)) {
+            console.log("YETE" + aId)
             rStr += `\n\t ID: ${aId}, Value: ${this.mapping[aId]}`
         }
         return rStr;
@@ -63,7 +64,9 @@ function isConcurrent(vector1, vector2) {
     less = false;
 
     allKeys = union(new Set(Object.keys(vector1.mapping)), new Set(Object.keys(vector2.mapping)));
-
+    console.log("vector1 " + vector1.toString());
+    console.log("vector2 "+ vector2.toString());
+    console.log("allKeys " + allKeys.toString());
     for (var akey of allKeys) {
         var v1val = 0;
         var v2val = 0;
@@ -81,7 +84,7 @@ function isConcurrent(vector1, vector2) {
         }
     }
 
-    return greater && less
+    return greater && less;
 }
 
 // is vector1 ahead of vector2?
@@ -103,12 +106,10 @@ function proceeding(vector1, vector2){
         }
         if (v1val > v2val) {
             greater = true;
-        } else if (v1val < v2val) {
-            less = true;
         }
     }
 
-    return !greater
+    return !greater;
 }
 
 // set union copied off stack overflow
@@ -122,5 +123,6 @@ function union(setA, setB) {
 
 module.exports = {
     VectorClock,
-    isConcurrent
+    isConcurrent,
+    proceeding
 };

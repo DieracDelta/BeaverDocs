@@ -46,11 +46,11 @@ window.editor.on('change', (editor, obj) => {
 	return;
     }
     var rops = curPeerWrapper.crdt.applyLocal(seqops);
+    // console.log("ASDF" + curPeerWrapper.)
     var broadcastObj = {
         MessageType: Helpers.MessageType.SequenceOp,
         RemoteOps: rops,
-        // TODO why the hell is this null ??
-        VectorClock: curPeerWrapper.siteVC
+        VectorClock: curPeerWrapper.crdt.siteVC
     };
     curPeerWrapper.broadcast(broadcastObj);
     // console.log("remote ops" + rops.toString());

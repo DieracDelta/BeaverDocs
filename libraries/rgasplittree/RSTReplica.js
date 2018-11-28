@@ -248,14 +248,14 @@ RSTReplica.prototype = {
             if (rootIsNull) {
                 this.root = newTree;
             } else if (this.root.leftChild === null) {
-                assertion.assertNotEqual(newTree, this.root);
+                // assertion.assertNotEqual(newTree, this.root);
                 this.root.leftChild = newTree;
                 if (newTree !== null) {
                     newTree.parent = this.root;
                 }
             } else {
                 var mostRight = findMostRight(this.root.leftChild, 0);
-                assertion.assertNotEqual(newTree, mostRight);
+                // assertion.assertNotEqual(newTree, mostRight);
                 mostRight.rightChild = newTree;
                 if (newTree !== null) {
                     newTree.parent = mostRight;

@@ -5,6 +5,7 @@ const s3v = require("../libraries/vectorclock/s3vector");
 const generate = require('nanoid/generate');
 const peerjs = require('peerjs');
 const PORT = 2718;
+const vectorclock = require("../libraries/vectorclock/vectorClock");
 // TODO things to implement
 // shared list of all peers
 // TODO forward messages
@@ -164,13 +165,23 @@ PeerWrapper.prototype = {
                         anOpSerialized.len
                     );
 
-                    // this.Q.unshift(anOp)
+                    this.Q.unshift([anOp, jsonData.VectorClock]);
+                    newQ = [];
+                    // console.log(this.Q);
 
-                    // // if casually ready set
-                    // nextOp = this.Q.pop()
-                    // this.crdt.integrateRemote(nextOp);
-                    this.crdt.integrateRemote(anOp);
-                    this.editor.setValue(this.crdt.toString());
+                    for (q=0; q < this.Q.length; q++) {
+                        if(vectorclock.proceeding(this.Q[q][1], this.crdt.siteVC)|| vectorclock.isConcurrent(this.Q[q][1], this.crdt.siteVC)){
+                            nextOp = this.Q[q];
+                            this.crdt.integrateRemote(nextOp);
+                            this.crdt.processVector(this.Q[q][1]);
+                            this.editor.setValue(this.crdt.toString());
+                        }
+                        else{
+                            newQ.push(this.Q[q]);
+                        }
+                    }
+                    this.Q = newQ;
+                    this.editor.setValue(this.crdt.toString());                    
                 }
             }
         });

@@ -149,7 +149,8 @@ const wrapper = require('./RSTWrapper');
 // });
 
 test("integration testing between multiple peers", () => {
-    var test1 = new wrapper.RSTWrapper(new replica.RSTReplica(), 0);
+    var test1 = new wrapper.RSTWrapper(new replica.RSTReplica(), 69);
+    console.log("THIS SITEVS IS: " + test1.siteVC.toString());
     var test2 = new wrapper.RSTWrapper(new replica.RSTReplica(), 1);
     var localInsertOps = new ops.generateSeqOpsForInsert(0, "hello world <3");
     var localDeleteOps = new ops.generateSeqOpsForDelete(6, 6);
