@@ -232,25 +232,6 @@ PeerWrapper.prototype = {
 
 }
 
-// // set union copied off stack overflow
-// function union(setA, setB) {
-//     var _union = new Set(setA);
-//     for (var elem of setB) {
-//         _union.add(elem);
-//     }
-//     return _union;
-// }
-/*
-function stringifyIfObject(obj){
-    if(typeof obj == "object")
-        return JSON.stringify(obj);
-    else{
-        alert("found already stringified object")
-        return obj;
-    }
-}
-*/
-
 // operation types
 var MessageType = {
     "PeerListUpdate": 0,
