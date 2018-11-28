@@ -1,5 +1,5 @@
 html, body, h1, h2, h3, h4, h5, h6, p {
-  font-family: "Consolas", "Lato", "Helvetica Neue";
+  font-family: "Consolas", "Avenir";
   font-weight: 300;
   color: #293462;
 }
@@ -27,6 +27,12 @@ h3 {
   color: #586C88;
 }
 
+h4 {
+  font-size: 0.9em;
+  font-weight: 400;
+  color: #D4DBE5;
+}
+
 p {
   font-size: 1em;
   color: #586C88;
@@ -52,32 +58,13 @@ p {
   font-family: "Consolas";
   font-weight: 400;
   font-size: 1.2em;
-}
-
-.section-header {
-  padding: 1em;
-  padding-top: 2.5em;
-}
-
-.section-peers {
-  padding-left: 2em;
+  min-height: 60vh;
 }
 
 .section-mirror {
   color: #B1B8C3;
   padding: 1em;
   padding-right: 2em;
-}
-
-.section-footer {
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  background-color: #FFFFFF;
-  color: #000000;
-  text-align: right;
-  padding-right: 0.5em;
 }
 
 .user-profile {
@@ -95,10 +82,6 @@ p {
   display: inline-block;
 }
 
-.uppercase {
-  text-transform: uppercase;
-}
-
 .main-header {
   text-align: center;
   padding-top: 1.5em;
@@ -112,8 +95,15 @@ p {
   padding: 1.5em;
 }
 
+.main-footer {
+  text-align: center;
+  padding-top: 1.5em;
+  padding-bottom: 0.5em;
+}
+
 .side-bar {
   background-color: #F2F4F7;
+  height: 100%;
   min-height: 100vh;
   padding: 1.5em;
 }
@@ -123,6 +113,7 @@ p {
   border: none;
   background-color: transparent;
   height: 1.8em;
+  width: 100%;
 }
 
 .input-join:focus {
@@ -134,6 +125,7 @@ p {
   width: 100%;
   border: 1.5px solid #293462;
   padding: 0.3em;
+  margin-bottom: 1.5em;
 
 }
 
@@ -141,3 +133,11 @@ p {
   outline: none;
 }
 
+.row{
+    overflow: hidden; 
+}
+
+[class*="col-"]{
+    margin-bottom: -99999px;
+    padding-bottom: 99999px;
+}

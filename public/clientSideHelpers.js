@@ -12,7 +12,7 @@ const PORT = 2718;
 // TODO can't establish connection with yourself
 
 const colorList = ["#FF8C9A", "#BF9BD8", "#53CCE0", "#FFE663", "#A2D264", "#22AB9A",
-                    "#637CEA", "#A2BEED", "#FF4D4D", "#4F5882", "#5BBDAE", "#FF0000", 
+                    "#637CEA", "#A2BEED", "#FF82CC", "#4F5882", "#5BBDAE", "#FF0000", 
                     "#41E58B", "#FFB743", "#6E58FF", "#71899C", "#FF7E43", "#514F5E"];
 
 function PeerWrapper(editor) {
@@ -49,7 +49,6 @@ function PeerWrapper(editor) {
     this.peer.on('connection', (conn) => {
         this.directlyConnectedPeers[conn.peer] = conn;
         this.peerColors[conn.peer] = colorList[Math.floor(Math.random() * colorList.length)];
-        this.PrettyPrintDirectPeerList();
         this.IconPrintDirectPeerList();
         console.log("A new person has initiated a connection with you. Their ID is: " + String(conn.peer));
         this.addConnectionListeners(conn, conn.peer);
@@ -82,14 +81,9 @@ PeerWrapper.prototype = {
             delete this.directlyConnectedPeers[id];
             delete this.peerColors[id];
         }
-        console.log(this.directlyConnectedPeers)
+        console.log(this.directlyConnectedPeers);
         var conn = this.peer.connect(String(id));
         this.addConnectionListeners(conn, id);
-    },
-    // TODO should probably fix this...
-    PrettyPrintDirectPeerList: function () {
-        document.getElementById('directPeerList').innerHTML =
-            Object.keys(this.directlyConnectedPeers).reduce((a, c) => a + "\n\t" + c, "Directly Connected Peers:");
     },
     IconPrintDirectPeerList: function () {
         document.getElementById('icon-peer-list').innerHTML = "";
@@ -101,7 +95,6 @@ PeerWrapper.prototype = {
     broadcast: function (data) {
         for (apeerID of Object.keys(this.directlyConnectedPeers)) {
             console.log("broadcasting" + JSON.stringify(data))
-            // console.log(this.directlyConnectedPeers[apeerID].open);
             // TODO does this need to be stringified
             this.directlyConnectedPeers[apeerID].send(data);
         }
@@ -124,7 +117,6 @@ PeerWrapper.prototype = {
             */
             console.log("connected to " + id);
             this.directlyConnectedPeers[id] = conn;
-            this.PrettyPrintDirectPeerList();
             this.IconPrintDirectPeerList();
             this.updateView(id);
         });
@@ -134,7 +126,6 @@ PeerWrapper.prototype = {
             if (jsonData.MessageType === MessageType.PeerListUpdate) {
                 this.connectSet(jsonData.messageData);
             } else if (jsonData.MessageType === MessageType.SequenceOp) {
-                // console.log("YEEEET * 69");
                 // TODO this is where the ordering logic should go 
                 // TODO this doesn't really make it work on multiple lines (only one) rn
                 // TODO batching...
@@ -192,14 +183,12 @@ PeerWrapper.prototype = {
             delete this.directlyConnectedPeers[conn.peer];
             delete this.peerColors[conn.peer];
             console.log(this.directlyConnectedPeers);
-            this.PrettyPrintDirectPeerList();
             this.IconPrintDirectPeerList();
         });
         conn.on('disconnected', () => {
             console.log("got disconnected");
             delete this.directlyConnectedPeers[conn.peer];
             delete this.peerColors[conn.peer];
-            this.PrettyPrintDirectPeerList();
             this.IconPrintDirectPeerList();
             this.removeFromView(id);
         });
@@ -257,13 +246,6 @@ function stringifyIfObject(obj){
         alert("found already stringified object")
         return obj;
     }
-}
-*/
-
-/*
-function random_item(items)
-{
-return items[Math.floor(Math.random()*items.length)];
 }
 */
 
