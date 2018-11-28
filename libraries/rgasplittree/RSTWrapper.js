@@ -136,6 +136,8 @@ RSTWrapper.prototype = {
             }
         }
         this.checkRep();
+        this.localIncrement(this.sid);
+
         return listOfOps;
     },
     // integrate a remote operation into replica

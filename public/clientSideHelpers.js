@@ -21,6 +21,8 @@ function PeerWrapper(editor) {
     this.crdt = new crdt.RSTWrapper(new replica.RSTReplica(), this.sid);
     console.log("VECTOR CLOCK IS: " + this.crdt.siteVC.toString());
 
+    this.Q = [];
+
     this.peer = new peerjs(this.sid, {
         // host: '10.250.0.18',
         host: 'localhost',
