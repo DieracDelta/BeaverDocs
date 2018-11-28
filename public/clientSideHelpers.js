@@ -164,19 +164,13 @@ PeerWrapper.prototype = {
                         anOpSerialized.len
                     );
 
+                    // this.Q.unshift(anOp)
+
+                    // // if casually ready set
+                    // nextOp = this.Q.pop()
+                    // this.crdt.integrateRemote(nextOp);
                     this.crdt.integrateRemote(anOp);
-                    var oldCursorPos = this.editor.indexFromPos(this.editor.getCursor());
-                    var opPos = (vPos !== null) ? this.crdt.replica.getOpPos(vPos) : oldCursorPos;
                     this.editor.setValue(this.crdt.toString());
-                    if (opPos < oldCursorPos) {
-                        if (anOpSerialized == ops.opEnum.INSERT_OP) {
-                            this.editor.setCursor(oldCursorPos + anOpSerialized.contents.length);
-                        } else {
-                            this.editor.setCursor(oldCursorPos - (anOpSerialized.offsetEnd - anOpSerialized.offsetStart))
-                        }
-                    } else {
-                        oldCursorPos = this.editor.setCursor(oldCursorPos);
-                    }
                 }
             }
         });

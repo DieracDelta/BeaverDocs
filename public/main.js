@@ -57,8 +57,8 @@ window.editor.on('change', (editor, obj) => {
     // for (var op of seqops) {
     //     curPeerWrapper.crdt.applyLocal(op)
     // }
-    console.log(`at this point, the crdt looks like: \n\t\
-        ${curPeerWrapper.crdt.toString()}`);
+    // console.log(`at this point, the crdt looks like: \n\t\
+    //     ${curPeerWrapper.crdt.replica.root.prettyPrint()}`);
 });
 
 function getPos() {

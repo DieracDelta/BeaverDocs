@@ -1,7 +1,7 @@
 // implementation based on
 // https://www.cs.rutgers.edu/~pxk/417/notes/clocks/index.html
 
-// ids is a vector of current ids (including node's id)
+// ids is an array of current ids (including node's id)
 function VectorClock(ids) {
     this.mapping = {};
     for (var id of ids) {
@@ -77,13 +77,39 @@ function isConcurrent(vector1, vector2) {
         if (v1val > v2val) {
             greater = true;
         } else if (v1val < v2val) {
-            greater = false;
+            less = true;
         }
     }
 
     return greater && less
 }
 
+// is vector1 ahead of vector2?
+function proceeding(vector1, vector2){
+    greater = false;
+    less = false;
+
+    allKeys = union(new Set(Object.keys(vector1.mapping)), new Set(Object.keys(vector2.mapping)));
+
+    for (var akey of allKeys) {
+        var v1val = 0;
+        var v2val = 0;
+
+        if (akey in vector1.mapping) {
+            v1val = vector1.mapping[akey];
+        }
+        if (akey in vector2.mapping) {
+            v2val = vector1.mapping[akey];
+        }
+        if (v1val > v2val) {
+            greater = true;
+        } else if (v1val < v2val) {
+            less = true;
+        }
+    }
+
+    return !greater
+}
 
 // set union copied off stack overflow
 function union(setA, setB) {
