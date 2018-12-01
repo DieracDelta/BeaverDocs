@@ -165,12 +165,19 @@ PeerWrapper.prototype = {
                         anOpSerialized.len
                     );
 
-                    this.Q.unshift([anOp, jsonData.VectorClock]);
-                    newQ = [];
-                    // console.log(this.Q);
+                    var arrVc = new vectorclock.VectorClock([0]);
+                    arrVc.mapping = jsonData.VectorClock.mapping;
+                    this.Q.unshift([anOp, arrVc]);
+                    var newQ = [];
+                    console.log(this.Q);
 
-                    for (q=0; q < this.Q.length; q++) {
+                    for (var q in this.Q) {
+                        console.log("first " + this.Q[q][1]);
+                        console.log("second" + this.crdt.siteVC);
+                        console.log("proceeding " + vectorclock.proceeding(this.Q[q][1], this.crdt.siteVC));
+                        console.log("concurrent " + vectorclock.isConcurrent(this.Q[q][1], this.crdt.siteVC));
                         if(vectorclock.proceeding(this.Q[q][1], this.crdt.siteVC)|| vectorclock.isConcurrent(this.Q[q][1], this.crdt.siteVC)){
+                            console.log("executing opp")
                             nextOp = this.Q[q];
                             this.crdt.integrateRemote(nextOp);
                             this.crdt.processVector(this.Q[q][1]);

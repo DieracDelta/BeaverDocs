@@ -64,8 +64,6 @@ function isConcurrent(vector1, vector2) {
     less = false;
 
     allKeys = union(new Set(Object.keys(vector1.mapping)), new Set(Object.keys(vector2.mapping)));
-    console.log("vector1 " + vector1.toString());
-    console.log("vector2 "+ vector2.toString());
     console.log("allKeys " + allKeys.toString());
     for (var akey of allKeys) {
         var v1val = 0;
@@ -79,7 +77,7 @@ function isConcurrent(vector1, vector2) {
         }
         if (v1val > v2val) {
             greater = true;
-        } else if (v1val < v2val) {
+        } else if (v1val <= v2val) {
             less = true;
         }
     }
