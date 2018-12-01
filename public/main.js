@@ -43,7 +43,7 @@ window.editor.on('change', (editor, obj) => {
     } else {
         console.log("unsupported operation!");
         //assertion.assert(true, false);
-	return;
+        return;
     }
     var rops = curPeerWrapper.crdt.applyLocal(seqops);
     // console.log("ASDF" + curPeerWrapper.)
@@ -57,8 +57,8 @@ window.editor.on('change', (editor, obj) => {
     // for (var op of seqops) {
     //     curPeerWrapper.crdt.applyLocal(op)
     // }
-    // console.log(`at this point, the crdt looks like: \n\t\
-    //     ${curPeerWrapper.crdt.replica.root.prettyPrint()}`);
+    console.log(`at this point, the crdt looks like: \n\t\
+        ${curPeerWrapper.crdt.replica.root.prettyPrint()}`);
 });
 
 function getPos() {

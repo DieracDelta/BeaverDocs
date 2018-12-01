@@ -4,6 +4,7 @@ const RSTOp = require('../opTypes/Ops');
 const bbt = require('../trees/balancedbinary');
 const hashmap = require('../../node_modules/hashmap/hashmap');
 const assertion = require('../assertions');
+const cursor = require('../cursor/cursor');
 
 const printCall = false;
 const findPositionInLocalTreeDebug = false;
@@ -16,6 +17,7 @@ function RSTReplica() {
     // root of the tree
     this.root = null;
     this.size = 0;
+    this.cursor = new cursor.CursorPos(null, 0);
 }
 
 RSTReplica.prototype = {
@@ -63,6 +65,8 @@ RSTReplica.prototype = {
         this.insertInLocalTree(refTree, insNode);
 
         insNode.nextLink = nextNode;
+        // TODO YEET refnode--if we want to somehow return the absolute position of the insert
+        // we can do this in refnode
         refNode.nextLink = insNode;
         this.dict.set(op.vTomb.hash(), insNode);
         this.size += insNode.length;
@@ -101,6 +105,8 @@ RSTReplica.prototype = {
         // im herer boi
         // console.log("THE OFFST SHIT" + delNode.getOffset() + ", " + delNode.length + ", " + offsetEndAbs + ", " +
         // op.offsetEnd + ", " + op.vPos.offset);
+
+        // TODO YEET delNode before any of this deleting stuff is the offset we want
         while (delNode.getOffset() + delNode.length < offsetEndAbs) {
             // console.log("The NODE: " + delNode.toString());
             // console.log("some more deleted nodes: " + delNode.toString());
@@ -153,6 +159,12 @@ RSTReplica.prototype = {
             node.length = offset - node.key.offset;
             node.nextLink = end;
             node.splitLink = end;
+
+            if (node === this.cursor.node) {
+                if (this.cursor.offset > node.content.length) {
+                    this.cursor = new cursor.CursorPos(end, this.cursor.offset - node.content.length);
+                }
+            }
 
             // TODO are we hashing on key or node?
             this.dict.set(node.key.hash(), node);
@@ -274,12 +286,12 @@ RSTReplica.prototype = {
             }
         } else {
             if (tree.leftChild === null) {
-                assertion.assertNotEqual(newTree, tree);
+                assertion.assertNEQ(newTree, tree);
                 tree.leftChild = newTree;
                 newTree.parent = tree;
             } else {
                 var mostRight = this.findMostRight(tree.leftChild, 0);
-                assertion.assertNotEqual(newTree, mostRight);
+                assertion.assertNEQ(newTree, mostRight);
                 mostRight.rightChild = newTree;
                 newTree.parent = mostRight;
             }
@@ -293,6 +305,18 @@ RSTReplica.prototype = {
         this.checkRep();
     },
     deleteInLocalTree: function (nodeToDelete) {
+        // TODO is moving this to the left the right move?
+        if (nodeToDelete === this.cursor.node) {
+            var offset = 0;
+            var newCursorNode = this.getNextLeftTreeNode(nodeToDelete);
+            if (newCursorNode === null) {
+                newCursorNode = this.getnextRightTreeNode(nodeToDelete);
+            } else {
+                offset = newCursorNode.content.length
+            }
+            this.cursor = new cursor.CursorPos(newCursorNode, offset);
+        }
+
         this.checkRep();
         if (printCall) {
             console.log("called delete in local tree\n");
@@ -476,7 +500,7 @@ RSTReplica.prototype = {
     // key is a s3vector
     // this is still broken if you end up doing blocks 
     // (morally speaking you'll need to subtract from most recent block)
-    getOpPos: function (key) {
+    getOffset: function (key) {
         var offset = 0;
         var curNode = this.head;
         while (curNode !== null) {
@@ -489,6 +513,84 @@ RSTReplica.prototype = {
             curNode = curNode.nextLink;
         }
         return offset;
+    },
+    // key: the key to search for (equivalent to RSTNode key)
+    getOffsetBBT: function (key) {
+        var stack = [];
+        var curNode = this.root;
+        var offset = 0;
+        while (curNode !== null && s.length > 0) {
+            while (curNode !== null) {
+                stack.push(curNode);
+                curNode = curNode.leftChild;
+            }
+            curNode = stack.pop();
+            if (s3vector.equal(curNode.rep.key === key)) {
+                return offset;
+            }
+            // eval
+            offset += curNode.rep.content.length;
+            curNode = curNode.rightChild;
+        }
+        console.log("ERROR ERROR node key not in tree!");
+        return 0;
+    },
+    // inserts cursor into data structure at 
+    // pull cursor to the *right* not left
+    insertCursor: function (absPos) {
+        var remainingOffset = absPos;
+        var curNode = this.head;
+
+        while (curNode !== null) {
+            if (remainingOffset < curNode.content.length) {
+                this.cursor = new cursor.CursorPos(curNode, remainingOffset);
+                return
+            }
+            remainingOffset -= curNode.content.length;
+            var nextNode = this.getNextLiveNodeLinkedList(curNode);
+            if (nextNode === null) {
+                console.log("off the end of the page! attaching to last node");
+                this.cursor = new cursor.CursorPos(curNode, curNode.content.length);
+            }
+        }
+    },
+    getNextLiveNodeLinkedList: function (node) {
+        var curNode = node;
+
+        while (curNode !== null) {
+            curNode = curNode.nextLink;
+            if (!curNode.isTombstone) {
+                return curNode;
+            }
+        }
+        console.log("that was the last node! returning null");
+        return null;
+    },
+    // TODO should probably implement this for efficiency but Im lazy
+    // insertCursorBB: function (absPos) {
+
+    // },
+    // TODO our linked list isn't really set up to handle this, right?
+    // moveCursor: function (amount) {
+
+    // },
+
+    // TODO fix the two level to the left bug
+    // you just get the next right node or next left node ez pz
+    moveCursorBB: function (amount) {
+
+    },
+    // TODO implement these (they're literally just get the successor and predecessor nodes...)
+    // https: //www.geeksforgeeks.org/inorder-successor-in-binary-search-tree/
+    // MAKE SURE YOU'RE RETURNING THE REP not the node
+    getNextRightTreeNode: function (node) {
+        if (node === null) {
+            console.log("input node was null");
+            return null;
+        }
+    },
+    getNextLeftTreeNode: function (node) {
+
     }
 }
 

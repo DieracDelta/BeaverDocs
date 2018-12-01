@@ -148,46 +148,57 @@ const wrapper = require('./RSTWrapper');
 //     console.log("post delete: " + test.toString());
 // });
 
-test("integration testing between multiple peers", () => {
+// test("integration testing between multiple peers", () => {
+//     var test1 = new wrapper.RSTWrapper(new replica.RSTReplica(), 69);
+//     console.log("THIS SITEVS IS: " + test1.siteVC.toString());
+//     var test2 = new wrapper.RSTWrapper(new replica.RSTReplica(), 1);
+//     var localInsertOps = new ops.generateSeqOpsForInsert(0, "hello world <3");
+//     var localDeleteOps = new ops.generateSeqOpsForDelete(6, 6);
+//     var remoteInsertOps = test1.applyLocal(localInsertOps);
+//     console.log(remoteInsertOps);
+//     test2.integrateRemote(remoteInsertOps[0]);
+//     expect(test2.toString()).toBe("hello world <3");
+//     var remoteDeleteOps = test2.applyLocal(localDeleteOps);
+//     test1.integrateRemote(remoteDeleteOps[0]);
+//     expect(test1.toString()).toBe("hello <3");
+
+//     // opposite order
+//     test3 = new wrapper.RSTWrapper(new replica.RSTReplica(), 2);
+//     test3.integrateRemote(remoteInsertOps[0]);
+//     test3.integrateRemote(remoteDeleteOps[0]);
+//     console.log(test3.toString());
+
+//     // different place deletes
+//     var localDelOp1 = new ops.generateSeqOpsForDelete(0, 1);
+//     var localDelOp2 = new ops.generateSeqOpsForDelete(3, 1);
+//     var localInsOp1 = new ops.generateSeqOpsForInsert(3, "f");
+//     var ld1 = test1.applyLocal(localDelOp1);
+//     var ld2 = test2.applyLocal(localDelOp2);
+//     var li1 = test1.applyLocal(localInsOp1);
+
+//     console.log(ld1.toString());
+//     console.log(ld2.toString());
+
+//     // nice
+//     test3.integrateRemote(ld1[0]);
+//     test3.integrateRemote(ld2[0]);
+//     test3.integrateRemote(li1[0]);
+//     console.log(test3.toString());
+
+//     console.log(test3.replica.root.prettyPrint());
+//     console.log(test3.replica.head.nextLink.nextLink.toString());
+//     console.log(test3.replica.head.nextLink.nextLink.nextLink.nextLink.toString());
+//     console.log(test3.replica.head.nextLink.nextLink.nextLink.nextLink.nextLink.toString());
+//     console.log(test3.replica.head.nextLink.nextLink.nextLink.nextLink.nextLink.nextLink.nextLink.toString());
+// })
+
+test("double left insert test", () => {
     var test1 = new wrapper.RSTWrapper(new replica.RSTReplica(), 69);
-    console.log("THIS SITEVS IS: " + test1.siteVC.toString());
-    var test2 = new wrapper.RSTWrapper(new replica.RSTReplica(), 1);
-    var localInsertOps = new ops.generateSeqOpsForInsert(0, "hello world <3");
-    var localDeleteOps = new ops.generateSeqOpsForDelete(6, 6);
-    var remoteInsertOps = test1.applyLocal(localInsertOps);
-    console.log(remoteInsertOps);
-    test2.integrateRemote(remoteInsertOps[0]);
-    expect(test2.toString()).toBe("hello world <3");
-    var remoteDeleteOps = test2.applyLocal(localDeleteOps);
-    test1.integrateRemote(remoteDeleteOps[0]);
-    expect(test1.toString()).toBe("hello <3");
-
-    // opposite order
-    test3 = new wrapper.RSTWrapper(new replica.RSTReplica(), 2);
-    test3.integrateRemote(remoteInsertOps[0]);
-    test3.integrateRemote(remoteDeleteOps[0]);
-    console.log(test3.toString());
-
-    // different place deletes
-    var localDelOp1 = new ops.generateSeqOpsForDelete(0, 1);
-    var localDelOp2 = new ops.generateSeqOpsForDelete(3, 1);
-    var localInsOp1 = new ops.generateSeqOpsForInsert(3, "f");
-    var ld1 = test1.applyLocal(localDelOp1);
-    var ld2 = test2.applyLocal(localDelOp2);
-    var li1 = test1.applyLocal(localInsOp1);
-
-    console.log(ld1.toString());
-    console.log(ld2.toString());
-
-    // nice
-    test3.integrateRemote(ld1[0]);
-    test3.integrateRemote(ld2[0]);
-    test3.integrateRemote(li1[0]);
-    console.log(test3.toString());
-
-    console.log(test3.replica.root.prettyPrint());
-    console.log(test3.replica.head.nextLink.nextLink.toString());
-    console.log(test3.replica.head.nextLink.nextLink.nextLink.nextLink.toString());
-    console.log(test3.replica.head.nextLink.nextLink.nextLink.nextLink.nextLink.toString());
-    console.log(test3.replica.head.nextLink.nextLink.nextLink.nextLink.nextLink.nextLink.nextLink.toString());
-})
+    var localInsertOp1 = new ops.generateSeqOpsForInsert(0, "h");
+    var localInsertOp2 = new ops.generateSeqOpsForInsert(0, "e");
+    var localInsertOp3 = new ops.generateSeqOpsForInsert(0, "e");
+    test1.applyLocal(localInsertOp1);
+    test1.applyLocal(localInsertOp2);
+    test1.applyLocal(localInsertOp3);
+    console.log("YEE " + test1.toString());
+});
