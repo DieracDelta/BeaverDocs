@@ -13,8 +13,9 @@ const vectorclock = require("../libraries/vectorclock/vectorClock");
 // TODO can't establish connection with yourself
 
 const colorList = ["#FF8C9A", "#BF9BD8", "#53CCE0", "#FFE663", "#A2D264", "#22AB9A",
-                    "#637CEA", "#A2BEED", "#FF82CC", "#4F5882", "#5BBDAE", "#FF0000", 
-                    "#41E58B", "#FFB743", "#6E58FF", "#71899C", "#FF7E43", "#514F5E"];
+    "#637CEA", "#A2BEED", "#FF82CC", "#4F5882", "#5BBDAE", "#FF0000",
+    "#41E58B", "#FFB743", "#6E58FF", "#71899C", "#FF7E43", "#514F5E"
+];
 
 function PeerWrapper(editor) {
     this.editor = editor;
@@ -91,7 +92,7 @@ PeerWrapper.prototype = {
     IconPrintDirectPeerList: function () {
         document.getElementById('icon-peer-list').innerHTML = "";
         var allKeys = Object.keys(this.directlyConnectedPeers);
-        for (i=0; i < allKeys.length; i++) {
+        for (i = 0; i < allKeys.length; i++) {
             document.getElementById('icon-peer-list').innerHTML += '<button class="btn-peer" style="border-left: 1.5em solid ' + colorList[Math.floor(Math.random() * colorList.length)] + '">' + allKeys[i] + '</button>';
         }
     },
@@ -175,23 +176,23 @@ PeerWrapper.prototype = {
                         console.log("External " + this.Q[q][1]);
                         console.log("causaul" + vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC));
 
-                        if(vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC)){
+                        if (vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC)) {
                             console.log("executing opp")
                             nextOp = this.Q[q][0];
                             this.crdt.integrateRemote(nextOp, jsonData.messagePeerID);
                             this.crdt.siteVC.processVector(this.Q[q][1]);
-                            var cur = this.editor.getCursor();
+                            var cur = this;
                             this.editor.setValue(this.crdt.toString());
                             this.editor.setCursor(cur);
-                        }
-                        else{
+                        } else {
                             newQ.push(this.Q[q]);
                         }
                     }
                     this.Q = newQ;
-                    var cur = this.editor.getCursor();
+                    // var cur = this.editor.getCursor().indexFromPos();
+                    // this.crdt.replica.insertCursor()
                     this.editor.setValue(this.crdt.toString());
-                    this.editor.setCursor(cur);                
+                    this.editor.setCursor(this.editor.posFromIndex(this.crdt.getOffsetBBT(this.crdt.cursor.node)));
                 }
             }
         });
