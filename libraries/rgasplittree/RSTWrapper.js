@@ -148,10 +148,11 @@ RSTWrapper.prototype = {
     },
     // integrate a remote operation into replica
     // op: RSTOp
-    integrateRemote: function (op) {
+    integrateRemote: function (op, id) {
         console.log(op.vTomb);
-        this.localIncrement(op.vTomb.sid);
+        this.localIncrement(id);
         this.replica.apply(op);
+        console.log("Internal after remote integrate" + this.siteVC + "\n incremented sid: " + id);
     },
     // increments the global vector
     localIncrement: function (id) {

@@ -50,7 +50,8 @@ window.editor.on('change', (editor, obj) => {
     var broadcastObj = {
         MessageType: Helpers.MessageType.SequenceOp,
         RemoteOps: rops,
-        VectorClock: curPeerWrapper.crdt.siteVC
+        VectorClock: curPeerWrapper.crdt.siteVC,
+	messagePeerID: curPeerWrapper.sid
     };
     curPeerWrapper.broadcast(broadcastObj);
     // console.log("remote ops" + rops.toString());

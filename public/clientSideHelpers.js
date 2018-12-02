@@ -25,7 +25,7 @@ function PeerWrapper(editor) {
     this.Q = [];
 
     this.peer = new peerjs(this.sid, {
-        // host: '10.250.0.18',
+        //host: '10.250.0.18',
         host: 'localhost',
         port: PORT,
         path: '/peerjs'
@@ -147,7 +147,7 @@ PeerWrapper.prototype = {
                     }
                     var vTomb = new s3v.s3Vector(null, -1, -1);
                     if (anOpSerialized.vTomb === null) {
-                        vTomb = null
+                        vTomb = null;
                     } else {
                         vTomb.offset = anOpSerialized.vTomb.offset;
                         vTomb.sum = anOpSerialized.vTomb.sum;
@@ -178,7 +178,7 @@ PeerWrapper.prototype = {
                         if(vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC)){
                             console.log("executing opp")
                             nextOp = this.Q[q][0];
-                            this.crdt.integrateRemote(nextOp);
+                            this.crdt.integrateRemote(nextOp, jsonData.messagePeerID);
                             this.crdt.siteVC.processVector(this.Q[q][1]);
                             this.editor.setValue(this.crdt.toString());
                         }
