@@ -304,6 +304,7 @@ RSTReplica.prototype = {
         }
         this.checkRep();
     },
+    // input nodeToDelete is a RSTNode
     deleteInLocalTree: function (nodeToDelete) {
         // TODO is moving this to the left the right move?
         if (nodeToDelete === this.cursor.node) {
@@ -535,7 +536,7 @@ RSTReplica.prototype = {
         console.log("ERROR ERROR node key not in tree!");
         return 0;
     },
-    // inserts cursor into data structure at 
+    // inserts cursor into data structure at absPos
     // pull cursor to the *right* not left
     insertCursor: function (absPos) {
         var remainingOffset = absPos;
@@ -575,22 +576,59 @@ RSTReplica.prototype = {
 
     // },
 
-    // TODO fix the two level to the left bug
     // you just get the next right node or next left node ez pz
-    moveCursorBB: function (amount) {
-
+    // TODO only works for amount = +-1 rn
+    moveCursor: function (amount) {
+        var newOffset = amount + this.cursor.offset
+        if (newOffset < 0) {
+            var oldnode = this.cursor.node;
+            var newNode = this.getNextLeftTreeNode(this.cursor.node);
+            if (newNode !== null) {
+                this.cursor = new cursor.CursorPos(newNode, newNode.content.length + newOffset);
+            }
+        } else if (this.cursor.node.content.length < newOffset) {
+            var oldNode = this.cursor.node;
+            var newNode = this.getNextRightTreeNode(this.cursor.node);
+            if (newNode !== null) {
+                this.cursor = new cursor.CursorPos(newNode, newOffset - oldNode.content.length);
+            }
+        } else {
+            this.cursor.offset += amount;
+        }
     },
     // TODO implement these (they're literally just get the successor and predecessor nodes...)
     // https: //www.geeksforgeeks.org/inorder-successor-in-binary-search-tree/
     // MAKE SURE YOU'RE RETURNING THE REP not the node
+    // node is RSTNode
+
+    // node is RSTNode 
     getNextRightTreeNode: function (node) {
+        var sNode = this.head;
         if (node === null) {
-            console.log("input node was null");
             return null;
         }
+        while (sNode !== null) {
+            if (sNode === node) {
+                return this.getNextLiveNodeLinkedList(sNode);
+            }
+            sNode = this.getNextLiveNodeLinkedList(sNode);
+        }
+
+        return null;
     },
     getNextLeftTreeNode: function (node) {
-
+        var sNode = this.head;
+        if (node === null || sNode === null) {
+            return null;
+        }
+        while (sNode !== null) {
+            var nn = this.getNextLiveNodeLinkedList(sNode);
+            if (nn === node) {
+                return sNode;
+            }
+            sNode = nn;
+        }
+        return null;
     }
 }
 
