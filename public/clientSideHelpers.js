@@ -173,7 +173,6 @@ PeerWrapper.prototype = {
 
                     for (var q in this.Q) {
                         console.log("External " + this.Q[q][1]);
-                        console.log("Internal " + this.crdt.siteVC);
                         console.log("causaul" + vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC));
 
                         if(vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC)){

@@ -34,6 +34,8 @@ RSTWrapper.prototype = {
                 // console.log("FAILL!! with optype: " + op.opType)
                 assertion.assert(false, true);
                 return null;
+        console.log("Internal " + this.siteVC);
+
         }
     },
     // takes a sequence operation to apply to local replica
