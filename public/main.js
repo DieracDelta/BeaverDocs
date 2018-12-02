@@ -15,24 +15,29 @@ window.editor.on('cursorActivity', (editor) => {
         ", ch: " + window.editor.getDoc().getCursor()["ch"];
     document.getElementById("abspos").innerHTML = "absolute position: " +
         window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
-    // var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
+    var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
+    if (curPeerWrapper.crdt.replica.cursor.node !== null && curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node)+curPeerWrapper.crdt.replica.cursor.offset === cur_pos){
+        curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+        console.log("moving cursor");
+    }
     // var delta = last_pos - cur_pos;
-    // last_pos = cur_pos;
+    // var last_pos = cur_pos;
+    
 
 });
 
-window.editor.on('keyHandled', (editor, c, e) => {
-    if(c === "Right"){
-        var delta = 1;
-        curPeerWrapper.crdt.replica.moveCursor(delta);
-    }
+// window.editor.on('keyHandled', (editor, c, e) => {
+//     if(c === "Right"){
+//         var delta = 1;
+//         curPeerWrapper.crdt.replica.moveCursor(delta);
+//     }
 
-    if(c=== "Left"){
-        var delta = -1;
-        curPeerWrapper.crdt.replica.moveCursor(delta);        
-    }
+//     if(c=== "Left"){
+//         var delta = -1;
+//         curPeerWrapper.crdt.replica.moveCursor(delta);        
+//     }
 
-});
+// });
 
 window.editor.on('change', (editor, obj) => {
     document.getElementById("lastchange").innerHTML =
