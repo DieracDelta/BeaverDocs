@@ -39,7 +39,7 @@ RSTReplica.prototype = {
     // returns boolean indicating success
     remoteInsert: function (op) {
         this.checkRep();
-        var insNode = new RSTNode.RSTNode(op.vTomb, op.contents, null, null, false, null)
+        var insNode = new RSTNode.RSTNode(op.vTomb, op.contents, null, null, false, null);
         var refNode, nextNode, refTree;
 
         if (op.vPos === null) {
@@ -57,7 +57,7 @@ RSTReplica.prototype = {
                 break;
             }
             refNode = nextNode;
-            nextNode = nextnode.nextLink;
+            nextNode = nextNode.nextLink;
         }
 
         refTree = refNode.getNextAliveLinkedListNode();
@@ -541,8 +541,12 @@ RSTReplica.prototype = {
     // pull cursor to the *right* not left
     insertCursor: function (absPos) {
         var remainingOffset = absPos;
-        var curNode = this.head;
-
+	if(this.head.isTombstone){
+		var curNode = this.getNextLiveNodeLinkedList(this.head);
+	} else {
+		var curNode = this.head;
+	}
+	console.log("yaheeet" + curNode.toString());
         while (curNode !== null) {
             if (remainingOffset < curNode.content.length) {
                 this.cursor = new cursor.CursorPos(curNode, remainingOffset);

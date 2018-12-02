@@ -16,8 +16,13 @@ window.editor.on('cursorActivity', (editor) => {
     document.getElementById("abspos").innerHTML = "absolute position: " +
         window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
     var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
-    if (curPeerWrapper.crdt.replica.cursor.node !== null && curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node)+curPeerWrapper.crdt.replica.cursor.offset === cur_pos){
-        curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+    if (curPeerWrapper.crdt.replica.cursor.node !== null){
+    	var blah = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key)+curPeerWrapper.crdt.replica.cursor.offset; 
+	console.log("crdt offset" + blah);
+	console.log("editor offset " + cur_pos);
+	if(blah === cur_pos){
+		curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+	}
         console.log("moving cursor");
     }
     // var delta = last_pos - cur_pos;
