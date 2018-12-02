@@ -3,6 +3,7 @@ const assertion = require('../libraries/assertions');
 const ops = require('../libraries/opTypes/Ops');
 
 var codemirrorContent = document.getElementById("codemirror-textarea");
+var last_pos = 0
 
 window.editor = CodeMirror.fromTextArea(codemirrorContent, {
     lineNumbers: true,
@@ -14,6 +15,23 @@ window.editor.on('cursorActivity', (editor) => {
         ", ch: " + window.editor.getDoc().getCursor()["ch"];
     document.getElementById("abspos").innerHTML = "absolute position: " +
         window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
+    // var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
+    // var delta = last_pos - cur_pos;
+    // last_pos = cur_pos;
+
+});
+
+window.editor.on('keyHandled', (editor, c, e) => {
+    if(c === "Right"){
+        var delta = 1;
+        curPeerWrapper.crdt.replica.moveCursor(delta);
+    }
+
+    if(c=== "Left"){
+        var delta = -1;
+        curPeerWrapper.crdt.replica.moveCursor(delta);        
+    }
+
 });
 
 window.editor.on('change', (editor, obj) => {
