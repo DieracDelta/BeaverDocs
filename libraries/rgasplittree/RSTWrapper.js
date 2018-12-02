@@ -66,6 +66,7 @@ RSTWrapper.prototype = {
     // returns a list of RSTOps to broadcast to remote replicas
     // TODO I guess I don't neeed to increment the global vc on delete operations??
     localDelete: function (op) {
+        // this.localIncrement(this.sid);
         this.checkRep();
         listOfOps = []
         var startPos = this.replica.findPositionInLocalTree(op.pos + 1);
@@ -84,7 +85,8 @@ RSTWrapper.prototype = {
                 endPos.offset, 0, 0
             );
             this.replica.apply(rOp);
-            // console.log("1: replica looks like: " + this.replica.toString());
+            // console.log("1: replica looks like: " + this.replica.toString());\
+            this.localIncrement(this.sid)
             listOfOps.push(rOp);
         } else {
             var temp = startNode.key;
@@ -97,6 +99,7 @@ RSTWrapper.prototype = {
             // console.log("YEEEET");
             this.replica.apply(rOp);
             // console.log("2: replica looks like: " + this.replica.toString());
+            this.localIncrement(this.sid);
             listOfOps.push(rOp);
 
             var tempNode = startNode.getNextAliveLinkedListNode();
@@ -116,6 +119,7 @@ RSTWrapper.prototype = {
 
                 this.replica.apply(rOp2);
                 // console.log("3: replica looks like: " + this.replica.toString());
+                this.localIncrement(this.sid)
                 listOfOps.push(rOp2);
                 tempNode = tempNode.getNextAliveLinkedListNode();
             }
@@ -131,12 +135,12 @@ RSTWrapper.prototype = {
                 // console.log("4: operation to apply: " + rOp3.toString());
                 // assertion.assert(false);
                 this.replica.apply(rOp3);
+                this.localIncrement(this.sid);
                 // console.log("4: replica looks like: " + this.replica.toString());
                 listOfOps.push(rOp3);
             }
         }
         this.checkRep();
-        this.localIncrement(this.sid);
 
         return listOfOps;
     },

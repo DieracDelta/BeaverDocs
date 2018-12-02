@@ -140,7 +140,7 @@ PeerWrapper.prototype = {
                     if (anOpSerialized.vPos === null) {
                         vPos = null
                     } else {
-                        console.log("Y E E T");
+                        // console.log("Y E E T");
                         vPos.offset = anOpSerialized.vPos.offset;
                         vPos.sum = anOpSerialized.vPos.sum;
                         vPos.sid = anOpSerialized.vPos.sid;
@@ -172,15 +172,15 @@ PeerWrapper.prototype = {
                     console.log(this.Q);
 
                     for (var q in this.Q) {
-                        console.log("first " + this.Q[q][1]);
-                        console.log("second" + this.crdt.siteVC);
-                        console.log("proceeding " + vectorclock.proceeding(this.Q[q][1], this.crdt.siteVC));
-                        console.log("concurrent " + vectorclock.isConcurrent(this.Q[q][1], this.crdt.siteVC));
-                        if(vectorclock.proceeding(this.Q[q][1], this.crdt.siteVC)|| vectorclock.isConcurrent(this.Q[q][1], this.crdt.siteVC)){
+                        console.log("External " + this.Q[q][1]);
+                        console.log("Internal " + this.crdt.siteVC);
+                        console.log("causaul" + vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC));
+
+                        if(vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC)){
                             console.log("executing opp")
-                            nextOp = this.Q[q];
+                            nextOp = this.Q[q][0];
                             this.crdt.integrateRemote(nextOp);
-                            this.crdt.processVector(this.Q[q][1]);
+                            this.crdt.siteVC.processVector(this.Q[q][1]);
                             this.editor.setValue(this.crdt.toString());
                         }
                         else{

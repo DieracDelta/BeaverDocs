@@ -50,7 +50,7 @@ VectorClock.prototype = {
     toString: function () {
         var rStr = ""
         for (aId of Object.keys(this.mapping)) {
-            console.log("YETE" + aId)
+            // console.log("YETE" + aId)
             rStr += `\n\t ID: ${aId}, Value: ${this.mapping[aId]}`
         }
         return rStr;
@@ -58,13 +58,44 @@ VectorClock.prototype = {
 
 }
 
+// are the functions causally ready?
+function isCausual(vectorExternal, vectorInternal){
+    allKeys = union(new Set(Object.keys(vectorExternal.mapping)), new Set(Object.keys(vectorInternal.mapping)));
+    var less = 0;
+    for (var akey of allKeys){
+        var extVal = 0;
+        var intVal = 0;
+
+        if (akey in vectorExternal.mapping) {
+            extVal = vectorExternal.mapping[akey];
+        }
+        if (akey in vectorInternal.mapping) {
+            intVal = vectorInternal.mapping[akey];
+        }
+
+        if (extVal == intVal+1) {
+            less++;
+
+        }
+        if (extVal > intVal+1){
+            return false;
+        }
+    }
+    if (less == 1){
+        return true;
+    }
+    else{
+        return false;
+    }
+
+}
 // are the two vectorclocks concurrent?
 function isConcurrent(vector1, vector2) {
     greater = false;
     less = false;
 
     allKeys = union(new Set(Object.keys(vector1.mapping)), new Set(Object.keys(vector2.mapping)));
-    console.log("allKeys " + allKeys.toString());
+    // console.log("allKeys " + allKeys.toString());
     for (var akey of allKeys) {
         var v1val = 0;
         var v2val = 0;
@@ -77,7 +108,7 @@ function isConcurrent(vector1, vector2) {
         }
         if (v1val > v2val) {
             greater = true;
-        } else if (v1val <= v2val) {
+        } else if (v1val < v2val) {
             less = true;
         }
     }
@@ -122,5 +153,6 @@ function union(setA, setB) {
 module.exports = {
     VectorClock,
     isConcurrent,
-    proceeding
+    proceeding,
+    isCausual
 };
