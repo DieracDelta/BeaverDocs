@@ -26,8 +26,8 @@ function PeerWrapper(editor) {
     this.Q = [];
 
     this.peer = new peerjs(this.sid, {
-        host: '10.250.0.18',
-        //host: 'localhost',
+        //host: '10.250.0.18',
+        host: 'localhost',
         port: PORT,
         path: '/peerjs'
     });
@@ -192,7 +192,12 @@ PeerWrapper.prototype = {
                     // var cur = this.editor.getCursor().indexFromPos();
                     // this.crdt.replica.insertCursor()
                     this.editor.setValue(this.crdt.toString());
-                    this.editor.setCursor(this.editor.posFromIndex(this.crdt.replica.getOffset(this.crdt.replica.cursor.node)));
+                    if (this.crdt.replica.head !== null) {
+                        if (this.crdt.replica.cursor.node === null) {
+                            this.crdt.replica.cursor.node = this.crdt.replica.head;
+                        }
+                        this.editor.setCursor(this.editor.posFromIndex(this.crdt.replica.getOffset(this.crdt.replica.cursor.node)));
+                    }
                 }
             }
         });
