@@ -520,7 +520,8 @@ RSTReplica.prototype = {
         var stack = [];
         var curNode = this.root;
         var offset = 0;
-        while (curNode !== null && s.length > 0) {
+	// TODO wrong
+        while (curNode !== null && stack.length > 0) {
             while (curNode !== null) {
                 stack.push(curNode);
                 curNode = curNode.leftChild;

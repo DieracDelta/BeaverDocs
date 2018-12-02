@@ -26,8 +26,8 @@ function PeerWrapper(editor) {
     this.Q = [];
 
     this.peer = new peerjs(this.sid, {
-        //host: '10.250.0.18',
-        host: 'localhost',
+        host: '10.250.0.18',
+        //host: 'localhost',
         port: PORT,
         path: '/peerjs'
     });
@@ -181,9 +181,9 @@ PeerWrapper.prototype = {
                             nextOp = this.Q[q][0];
                             this.crdt.integrateRemote(nextOp, jsonData.messagePeerID);
                             this.crdt.siteVC.processVector(this.Q[q][1]);
-                            var cur = this;
-                            this.editor.setValue(this.crdt.toString());
-                            this.editor.setCursor(cur);
+                            //var cur = this;
+                            //this.editor.setValue(this.crdt.toString());
+                            //this.editor.setCursor(cur);
                         } else {
                             newQ.push(this.Q[q]);
                         }
@@ -192,7 +192,7 @@ PeerWrapper.prototype = {
                     // var cur = this.editor.getCursor().indexFromPos();
                     // this.crdt.replica.insertCursor()
                     this.editor.setValue(this.crdt.toString());
-                    this.editor.setCursor(this.editor.posFromIndex(this.crdt.getOffsetBBT(this.crdt.cursor.node)));
+                    this.editor.setCursor(this.editor.posFromIndex(this.crdt.replica.getOffset(this.crdt.replica.cursor.node)));
                 }
             }
         });
