@@ -561,7 +561,7 @@ RSTReplica.prototype = {
 
         while (curNode !== null) {
             curNode = curNode.nextLink;
-            if (!curNode.isTombstone) {
+            if (curNode !== null && !curNode.isTombstone) {
                 return curNode;
             }
         }
