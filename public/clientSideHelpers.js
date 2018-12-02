@@ -180,14 +180,18 @@ PeerWrapper.prototype = {
                             nextOp = this.Q[q][0];
                             this.crdt.integrateRemote(nextOp, jsonData.messagePeerID);
                             this.crdt.siteVC.processVector(this.Q[q][1]);
+                            var cur = this.editor.getCursor();
                             this.editor.setValue(this.crdt.toString());
+                            this.editor.setCursor(cur);
                         }
                         else{
                             newQ.push(this.Q[q]);
                         }
                     }
                     this.Q = newQ;
-                    this.editor.setValue(this.crdt.toString());                    
+                    var cur = this.editor.getCursor();
+                    this.editor.setValue(this.crdt.toString());
+                    this.editor.setCursor(cur);                
                 }
             }
         });
