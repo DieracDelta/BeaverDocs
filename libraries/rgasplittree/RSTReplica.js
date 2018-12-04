@@ -502,13 +502,21 @@ RSTReplica.prototype = {
     // this is still broken if you end up doing blocks 
     // (morally speaking you'll need to subtract from most recent block)
     getOffset: function (key) {
+        console.log("fakk");
         var offset = 0;
         var curNode = this.head;
+        // if the head of the linked list is null ...
+        if (curNode !== null && curNode.isTombstone) {
+            console.log("entered in here ...");
+            curNode = this.getNextLiveNodeLinkedList(this.head);
+        }
         while (curNode !== null) {
+            console.log("doot");
             if (curNode.key !== null && s3vector.equal(curNode.key, key)) {
                 return offset;
             }
             if (!curNode.isTombstone) {
+                console.log("yeet?")
                 offset += curNode.content.length;
             }
             curNode = curNode.nextLink;
@@ -519,8 +527,14 @@ RSTReplica.prototype = {
         var rVal = "";
         var curNode = this.head;
         while (curNode !== null) {
-            rVal += curNode.content;
-            rVal += "  -->  "
+            if (!curNode.isTombstone) {
+                if (curNode.key === null) {
+                    rVal += "null";
+                } else {
+                    rVal += curNode.key;
+                }
+                rVal += "  -->  "
+            }
             curNode = curNode.nextLink;
         }
         return rVal;

@@ -21,6 +21,7 @@ document.getElementById('inscpos').onclick = function () {
         window.editor.setCursor(cur_pos);
     }
     console.log("crdt looks like: " + curPeerWrapper.crdt.replica.ppLinkedList());
+    console.log("and the key is: " + curPeerWrapper.crdt.replica.cursor.node.key.toString());
     console.log("cursor now at: " + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset);
 }
 
