@@ -26,8 +26,8 @@ function PeerWrapper(editor) {
     this.Q = [];
 
     this.peer = new peerjs(this.sid, {
-        host: '10.250.0.18',
-        //host: 'localhost',
+        //host: '10.250.0.18',
+        host: 'localhost',
         port: PORT,
         path: '/peerjs'
     });
@@ -131,10 +131,17 @@ PeerWrapper.prototype = {
             this.updateView(id);
         });
         conn.on('data', (jsonData) => {
+            this.updateView(conn.peer);
             console.log("received data: " + JSON.stringify(jsonData) + " from " + conn.peer);
             document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
             if (jsonData.MessageType === MessageType.PeerListUpdate) {
                 this.connectSet(jsonData.messageData);
+            } else if (jsonData.MessageType === MessageType.Newscast) {
+                console.log(JSON.stringify(jsonData));
+                  
+                // TODO
+                // merge views
+                this.mergeViews(jsonData.messageData);
             } else if (jsonData.MessageType === MessageType.SequenceOp) {
                 // TODO this is where the ordering logic should go 
                 // TODO this doesn't really make it work on multiple lines (only one) rn
@@ -235,6 +242,28 @@ PeerWrapper.prototype = {
         // otherwise updates the timestamp
         this.view[id] = Date.now();
     },
+    mergeViews: function (otherView) {
+        var mostRecent = {};
+        var sizeOfMostRecent = 0;
+        for (var id of Object.keys(otherView)) {
+            if (sizeOfMostRecent < this.viewSize) {
+                if (id in Object.keys(mostRecent)) {
+                    if (otherView[id] > mostRecent[id]) {
+                        mostRecent[id] = otherView[id];
+                    }
+                } else {
+                    mostRecent[id] = otherView[id];
+                }
+                sizeOfMostRecent = Object.keys(mostRecent).length;
+                continue;
+            }
+            // if mostRecent has reached max capacity..
+
+            // find earliest timestamp in mostRecent
+            // check if otherView[id] is later
+            // if yes, remove earliest timestamp, insert id
+        }
+    }
     removeFromView: function (id) {
         delete this.view[id];
     },
@@ -246,7 +275,7 @@ PeerWrapper.prototype = {
             const peer = this.pickRandomPeer();
             //console.log("newscast : " + peer);
             if (peer) {
-                //sendNewsReq(peer);
+                this.sendNewsReq(peer);
             }
         }, this.viewTimeInterval);
     },
@@ -255,6 +284,15 @@ PeerWrapper.prototype = {
         const key = keys[Math.floor(Math.random() * keys.length)];
         console.log("newscasting to : " + key);
         return this.directlyConnectedPeers[key];
+    },
+    sendNewsReq: function (peer) {
+        var cloneView = Object.assign({}, this.view);
+        // add yourself to the view you send
+        cloneView[this.sid] = Date.now();
+        this.broadcast({
+            messageType: MessageType.Newscast,
+            messageData: cloneView
+        });
     }
 
 }
@@ -263,7 +301,8 @@ PeerWrapper.prototype = {
 var MessageType = {
     "PeerListUpdate": 0,
     "BroadcastUpdate": 1,
-    "SequenceOp": 2
+    "SequenceOp": 2,
+    "Newscast": 3
 }
 Object.freeze(MessageType);
 
