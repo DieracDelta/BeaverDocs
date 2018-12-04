@@ -1,6 +1,7 @@
 const Helpers = require('./clientSideHelpers');
 const assertion = require('../libraries/assertions');
 const ops = require('../libraries/opTypes/Ops');
+// const rep = require('../libraries/rgasplittree/RSTReplica');
 
 var codemirrorContent = document.getElementById("codemirror-textarea");
 var last_pos = 0
@@ -9,40 +10,75 @@ window.editor = CodeMirror.fromTextArea(codemirrorContent, {
     lineNumbers: true,
 });
 
+document.getElementById('inscpos').onclick = function () {
+    // TODO add in regex match as in id checking
+    var cur_pos = parseInt(document.getElementById('cpos').value);
+    // console.log("inserting at : " + cur_pos);
+    // console.log("eq 0" + (cur_pos === 0));
+    // console.log("eq 0 parseint" + (parseInt(cur_pos) === 0));
+    if (cur_pos < 10000) {
+        curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+        window.editor.setCursor(cur_pos);
+    }
+    console.log("crdt looks like: " + curPeerWrapper.crdt.replica.ppLinkedList());
+    console.log("cursor now at: " + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset);
+}
+
+// cut and paste code from here: 
+// https://stackoverflow.com/questions/40282995/how-can-i-act-on-cursor-activity-originating-from-mouse-clicks-and-not-keyboard
+// to detect clicks
+// on the click look at the position of the cursor
 window.editor.on('cursorActivity', (editor) => {
     document.getElementById("relpos").innerHTML = "line: " +
         window.editor.getDoc().getCursor()["line"] +
         ", ch: " + window.editor.getDoc().getCursor()["ch"];
     document.getElementById("abspos").innerHTML = "absolute position: " +
         window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
-    var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
-    if (curPeerWrapper.crdt.replica.cursor.node !== null){
-    	var blah = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key)+curPeerWrapper.crdt.replica.cursor.offset; 
-	console.log("crdt offset" + blah);
-	console.log("editor offset " + cur_pos);
-	if(blah === cur_pos){
-		curPeerWrapper.crdt.replica.insertCursor(cur_pos);
-	}
-        console.log("moving cursor");
-    }
+    // var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
+    // if (curPeerWrapper.crdt.replica.cursor.node !== null) {
+    //     var blah = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset;
+    //     console.log("crdt offset" + blah);
+    //     console.log("editor offset " + cur_pos);
+    //     // if (blah === cur_pos) {
+    //     curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+    //     window.editor.setCursor(cur_pos);
+    //     // }
+    //     console.log("moved cursor! cursor");
+    // } else {
+    //     console.log("null cursor!");
+    // }
     // var delta = last_pos - cur_pos;
     // var last_pos = cur_pos;
-    
-
 });
 
-// window.editor.on('keyHandled', (editor, c, e) => {
-//     if(c === "Right"){
-//         var delta = 1;
-//         curPeerWrapper.crdt.replica.moveCursor(delta);
-//     }
+// morally speaking, this is the right place to do things
+window.editor.on('keyHandled', (editor, c, e) => {
+    if (c === "Right") {
+        console.log("right yeet")
+        var delta = 1;
+        curPeerWrapper.crdt.replica.moveCursor(delta);
+        if (curPeerWrapper.crdt.replica.cursor.node !== null) {
+            var pos = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node)
+            console.log("crdt pos is:" + pos);
+            window.editor.setCursor(pos);
+        } else {
+            console.log("null!");
+        }
+    }
 
-//     if(c=== "Left"){
-//         var delta = -1;
-//         curPeerWrapper.crdt.replica.moveCursor(delta);        
-//     }
+    if (c === "Left") {
+        console.log(curPeerWrapper.crdt.replica.root.prettyPrint());
+        console.log("left yeet")
+        var delta = -1;
+        curPeerWrapper.crdt.replica.moveCursor(delta);
+        if (curPeerWrapper.crdt.replica.cursor.node !== null) {
+            window.editor.setCursor(curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node))
+        } else {
+            console.log("null!");
+        }
+    }
 
-// });
+});
 
 window.editor.on('change', (editor, obj) => {
     document.getElementById("lastchange").innerHTML =
@@ -79,7 +115,7 @@ window.editor.on('change', (editor, obj) => {
         MessageType: Helpers.MessageType.SequenceOp,
         RemoteOps: rops,
         VectorClock: curPeerWrapper.crdt.siteVC,
-	messagePeerID: curPeerWrapper.sid
+        messagePeerID: curPeerWrapper.sid
     };
     curPeerWrapper.broadcast(broadcastObj);
     // console.log("remote ops" + rops.toString());
@@ -100,6 +136,16 @@ document.getElementById('init').onclick = function () {
     document.getElementById('init').disabled = true;
     document.getElementById('myID').innerHTML = "id: " + String(curPeerWrapper.sid);
 }
+
+document.getElementById('copyID').onclick = function () {
+    const el = document.createElement('textarea');
+    el.value = curPeerWrapper.sid;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+}
+
 document.getElementById('join').onclick = function () {
     if (curPeerWrapper === null) {
         document.getElementById(errors).innerHTML = "peer not yet initialized!";
@@ -127,5 +173,7 @@ document.getElementById('broadcast').onclick = function () {
     }
 
 }
+
+
 
 document.getElementById('init').click();

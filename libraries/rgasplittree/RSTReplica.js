@@ -515,12 +515,23 @@ RSTReplica.prototype = {
         }
         return offset;
     },
+    ppLinkedList: function () {
+        var rVal = "";
+        var curNode = this.head;
+        while (curNode !== null) {
+            rVal += curNode.content;
+            rVal += "  -->  "
+            curNode = curNode.nextLink;
+        }
+        return rVal;
+
+    },
     // key: the key to search for (equivalent to RSTNode key)
     getOffsetBBT: function (key) {
         var stack = [];
         var curNode = this.root;
         var offset = 0;
-	// TODO wrong
+        // TODO wrong
         while (curNode !== null && stack.length > 0) {
             while (curNode !== null) {
                 stack.push(curNode);
@@ -541,12 +552,12 @@ RSTReplica.prototype = {
     // pull cursor to the *right* not left
     insertCursor: function (absPos) {
         var remainingOffset = absPos;
-	if(this.head.isTombstone){
-		var curNode = this.getNextLiveNodeLinkedList(this.head);
-	} else {
-		var curNode = this.head;
-	}
-	console.log("yaheeet" + curNode.toString());
+        if (this.head.isTombstone) {
+            var curNode = this.getNextLiveNodeLinkedList(this.head);
+        } else {
+            var curNode = this.head;
+        }
+        //console.log("yaheeet" + curNode.toString());
         while (curNode !== null) {
             if (remainingOffset < curNode.content.length) {
                 this.cursor = new cursor.CursorPos(curNode, remainingOffset);

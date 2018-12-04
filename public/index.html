@@ -23,44 +23,49 @@
 
 <body>
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-xs-12 col-sm-2 side-bar">
-      <div class="user-profile">
-        <span id="user-dot" class="user-dot"></span>
-        <h2>You</h2>
-        <p id="myID">uninitialized</p>
-      </div>
-      <div class="peer-list">
-        <h2>Peers</h2>
-        <div id="icon-peer-list">
-          <button class="btn-peer">Wild Fox</button>
-          <button class="btn-peer">Lion</button>
-          <button class="btn-peer">Red Panda</button>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-xs-12 col-sm-2 side-bar">
+        <div class="user-profile">
+          <span id="user-dot" class="user-dot"></span>
+          <h2>You</h2>
+          <p id="myID">uninitialized</p>
         </div>
+        <div class="peer-list">
+          <h2>Peers</h2>
+          <div id="icon-peer-list">
+            <!-- <button class="btn-peer">Wild Fox</button>
+            <button class="btn-peer">Lion</button>
+            <button class="btn-peer">Red Panda</button> -->
+          </div>
+        </div>
+        <textarea id="joinIDInput" class="input-join" placeholder="+ Enter join ID"></textarea>
+        <button type="button" id="join" class="btn-join"> Join Peer</button>
+        <button type="button" id="copyID" class="btn-join">Copy ID to clipboard </button>
+        <textarea id="cpos" class="input-join" placeholder="position to insert cursor"></textarea>
+        <button type="button" id="inscpos" class="btn-join"> perform insertion</button>
+
       </div>
-      <textarea id="joinIDInput" class="input-join" placeholder="+ Enter join ID"></textarea>
-      <button type="button" id="join" class="btn-join"> Join Peer</button>
-    </div>
-    <div class="col-xs-12 col-sm-10 main-content">
-      <div class="main-header">
-        <h1>Docs</h1>
-        <h3>Private and secure real-time collaborative text editing</h3>
-      </div>
-      <hr />
-      <div class="section-mirror">
-        <div id="lastchange"></div>
-        <div id="relpos"></div>
-        <div id="abspos"></div>
-        <textarea id="codemirror-textarea" placeholder="Start typing..."></textarea>
-      </div>
-      <div class="main-footer">
-        <h4>developed by justin restivo, arlene siswanto, grace yin, and fiona zhang at mit</h4>
+      <div class="col-xs-12 col-sm-10 main-content">
+        <div class="main-header">
+          <h1>Docs</h1>
+          <h3>Private and secure real-time collaborative text editing</h3>
+        </div>
+        <hr />
+        <div class="section-mirror">
+          <div id="lastchange"></div>
+          <div id="relpos"></div>
+          <div id="abspos"></div>
+          <textarea id="codemirror-textarea" placeholder="Start typing..."></textarea>
+        </div>
+        <div class="main-footer">
+          <h4>developed by justin restivo, arlene siswanto, grace yin, and fiona zhang at mit</h4>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
+  <!-- TODO remove these -->
   <button type="button" id="reset"> Reset Connection</button>
   <button type="button" id="init"> Init Peer</button>
   <button type="button" id="broadcast"> Broadcast to Peers</button>
@@ -73,5 +78,6 @@
 
   <script type="text/javascript" src="codemirror/lib/codemirror.js"></script>
   <script type="text/javascript" src="bundle.js"></script>
+
 </html>
 </body>
