@@ -179,6 +179,11 @@ PeerWrapper.prototype = {
                         if (vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC)) {
                             console.log("executing opp")
                             nextOp = this.Q[q][0];
+                            var crdtPos = -1;
+                            if (this.crdt.replica.cursor.node !== null) {
+                                var crdtPos = this.crdt.replica.getOffset(this.crdt.replica.cursor.node.key) + this.crdt.replica.cursor.offset;
+                            }
+                            console.log("CRDT POS PRIOR TO INSERT: " + crdtPos);
                             this.crdt.integrateRemote(nextOp, jsonData.messagePeerID);
                             this.crdt.siteVC.processVector(this.Q[q][1]);
                             //var cur = this;
@@ -196,7 +201,9 @@ PeerWrapper.prototype = {
                         if (this.crdt.replica.cursor.node === null) {
                             this.crdt.replica.cursor.node = this.crdt.replica.head;
                         }
-                        this.editor.setCursor(this.editor.posFromIndex(this.crdt.replica.getOffset(this.crdt.replica.cursor.node)));
+                        var crdtPos = this.crdt.replica.getOffset(this.crdt.replica.cursor.node.key) + this.crdt.replica.cursor.offset;
+                        console.log("CRDT POS:" + crdtPos);
+                        this.editor.setCursor(this.editor.posFromIndex(crdtPos));
                     }
                 }
             }

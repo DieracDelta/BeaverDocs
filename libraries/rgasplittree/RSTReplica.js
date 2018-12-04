@@ -511,12 +511,10 @@ RSTReplica.prototype = {
             curNode = this.getNextLiveNodeLinkedList(this.head);
         }
         while (curNode !== null) {
-            console.log("doot");
             if (curNode.key !== null && s3vector.equal(curNode.key, key)) {
                 return offset;
             }
             if (!curNode.isTombstone) {
-                console.log("yeet?")
                 offset += curNode.content.length;
             }
             curNode = curNode.nextLink;
@@ -571,15 +569,19 @@ RSTReplica.prototype = {
         } else {
             var curNode = this.head;
         }
-        //console.log("yaheeet" + curNode.toString());
+        console.log("yaheeet");
         while (curNode !== null) {
+            console.log("hi there!")
+            console.log("remaining offset: " + remainingOffset);
+            console.log("remaining content offset: " + curNode.content);
             if (remainingOffset < curNode.content.length) {
+                console.log("hi there 222!")
                 this.cursor = new cursor.CursorPos(curNode, remainingOffset);
                 return
             }
             remainingOffset -= curNode.content.length;
-            var nextNode = this.getNextLiveNodeLinkedList(curNode);
-            if (nextNode === null) {
+            curNode = this.getNextLiveNodeLinkedList(curNode);
+            if (curNode === null) {
                 console.log("off the end of the page! attaching to last node");
                 this.cursor = new cursor.CursorPos(curNode, curNode.content.length);
             }

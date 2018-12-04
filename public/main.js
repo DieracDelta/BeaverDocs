@@ -16,6 +16,7 @@ document.getElementById('inscpos').onclick = function () {
     // console.log("inserting at : " + cur_pos);
     // console.log("eq 0" + (cur_pos === 0));
     // console.log("eq 0 parseint" + (parseInt(cur_pos) === 0));
+    console.log("cur pos is: " + cur_pos);
     if (cur_pos < 10000) {
         curPeerWrapper.crdt.replica.insertCursor(cur_pos);
         window.editor.setCursor(cur_pos);
