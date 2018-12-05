@@ -38,7 +38,6 @@ function PeerWrapper(editor) {
     // coloring
     this.color = "#293462";
     this.peerColors = {};
-    document.getElementById('user-dot').style.backgroundColor = this.color;
     this.peerCursors = {};
 
     this.view = {};
@@ -119,7 +118,6 @@ PeerWrapper.prototype = {
     broadcast: function (data) {
         for (apeerID of Object.keys(this.directlyConnectedPeers)) {
             console.log("broadcasting" + JSON.stringify(data))
-            // TODO does this need to be stringified
             this.directlyConnectedPeers[apeerID].send(data);
         }
     },
@@ -132,13 +130,6 @@ PeerWrapper.prototype = {
     },
     addConnectionListeners: function (conn, id) {
         conn.on('open', () => {
-            /* TODO: Why do we need this?
-            if (id in this.directlyConnectedPeers) {
-                console.log("CLOSE 2");
-                this.directlyConnectedPeers[id].close();
-                delete this.directlyConnectedPeers[id];
-            }
-            */
             console.log("connected to " + id);
             this.directlyConnectedPeers[id] = conn;
             this.IconPrintDirectPeerList();
@@ -146,7 +137,6 @@ PeerWrapper.prototype = {
         });
         conn.on('data', (jsonData) => {
             console.log("received data: " + JSON.stringify(jsonData) + " from " + conn.peer);
-            document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
             if (jsonData.MessageType === MessageType.PeerListUpdate) {
                 this.connectSet(jsonData.messageData);
             } else if (jsonData.messageType == MessageType.CursorPositionUpdate) {
@@ -169,7 +159,6 @@ PeerWrapper.prototype = {
                     if (anOpSerialized.vPos === null) {
                         vPos = null
                     } else {
-                        // console.log("Y E E T");
                         vPos.offset = anOpSerialized.vPos.offset;
                         vPos.sum = anOpSerialized.vPos.sum;
                         vPos.sid = anOpSerialized.vPos.sid;
@@ -214,16 +203,11 @@ PeerWrapper.prototype = {
                             console.log("CRDT POS PRIOR TO INSERT: " + crdtPos);
                             this.crdt.integrateRemote(nextOp, jsonData.messagePeerID);
                             this.crdt.siteVC.processVector(this.Q[q][1]);
-                            //var cur = this;
-                            //this.editor.setValue(this.crdt.toString());
-                            //this.editor.setCursor(cur);
                         } else {
                             newQ.push(this.Q[q]);
                         }
                     }
                     this.Q = newQ;
-                    // var cur = this.editor.getCursor().indexFromPos();
-                    // this.crdt.replica.insertCursor()
                     this.editor.setValue(this.crdt.toString());
                     if (this.crdt.replica.head !== null) {
                         if (this.crdt.replica.cursor.node === null) {
@@ -271,7 +255,7 @@ PeerWrapper.prototype = {
     },
     updateView: function (id) {
         // if id not in this.views,
-        //  adds id to this.view and sets timestamp
+        // adds id to this.view and sets timestamp
         // otherwise updates the timestamp
         this.view[id] = Date.now();
     },

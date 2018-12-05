@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Beaver Docs</title>
+  <title>BeaverDocs</title>
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
     crossorigin="anonymous">
@@ -15,6 +15,7 @@
     crossorigin="anonymous">
 
   <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Barlow:100,200,300,400,500,600,700,800">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Sacramento:100,200,300,400,500,600,700,800">
 
   <link rel="stylesheet" type="text/css" href="codemirror/lib/codemirror.css">
   <link rel="stylesheet" href="./styles.css">
@@ -27,17 +28,13 @@
     <div class="row">
       <div class="col-xs-12 col-sm-2 side-bar">
         <div class="user-profile">
-          <span id="user-dot" class="user-dot"></span>
+          <img class="beaverpic" src="assets/beaverpic.png" />
           <h2>You</h2>
           <p id="myID">uninitialized</p>
         </div>
         <div class="peer-list">
           <h2>Peers</h2>
-          <div id="icon-peer-list">
-            <!-- <button class="btn-peer">Wild Fox</button>
-            <button class="btn-peer">Lion</button>
-            <button class="btn-peer">Red Panda</button> -->
-          </div>
+          <div id="icon-peer-list"></div>
         </div>
         <textarea id="joinIDInput" class="input-join" placeholder="+ Enter join ID"></textarea>
         <button type="button" id="join" class="btn-join">Join Peer</button>
@@ -64,17 +61,6 @@
       </div>
     </div>
   </div>
-
-  <!-- TODO remove these -->
-  <button type="button" id="reset"> Reset Connection</button>
-  <button type="button" id="init"> Init Peer</button>
-  <button type="button" id="broadcast"> Broadcast to Peers</button>
-  <textarea id="codeInput" placeholder="Text Here"></textarea>
-  <div>
-    recieved broadcasted message:
-    <div id="broadcasted"></div>
-  </div>
-  <div id="errors">Errors: </div>
 
   <script type="text/javascript" src="codemirror/lib/codemirror.js"></script>
   <script type="text/javascript" src="bundle.js"></script>

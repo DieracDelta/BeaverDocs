@@ -1,7 +1,6 @@
 const Helpers = require('./clientSideHelpers');
 const assertion = require('../libraries/assertions');
 const ops = require('../libraries/opTypes/Ops');
-// const rep = require('../libraries/rgasplittree/RSTReplica');
 
 var codemirrorContent = document.getElementById("codemirror-textarea");
 var last_pos = 0;
@@ -10,17 +9,20 @@ window.editor = CodeMirror.fromTextArea(codemirrorContent, {
     lineNumbers: true,
 });
 
+var curPeerWrapper = null;
+curPeerWrapper = new Helpers.PeerWrapper(window.editor);
+
+document.getElementById('myID').innerHTML = "id: " + String(curPeerWrapper.sid);
+
+
 document.getElementById('inscpos').onclick = function () {
     // TODO add in regex match as in id checking
-    var cur_pos = parseInt(document.getElementById('cpos').value);
-    // var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
-    // console.log("inserting at : " + cur_pos);
-    // console.log("eq 0" + (cur_pos === 0));
-    // console.log("eq 0 parseint" + (parseInt(cur_pos) === 0));
+    // var cur_pos = parseInt(document.getElementById('cpos').value);
+    var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
     console.log("cur pos is: " + cur_pos);
     if (cur_pos < 10000) {
         curPeerWrapper.crdt.replica.insertCursor(cur_pos);
-        window.editor.setCursor(cur_pos);
+        window.editor.setCursor({line: 0, ch: cur_pos});
     }
     console.log("crdt looks like: " + curPeerWrapper.crdt.replica.ppLinkedList());
     console.log("and the key is: " + curPeerWrapper.crdt.replica.cursor.node.key.toString());
@@ -38,21 +40,6 @@ window.editor.on('cursorActivity', (editor) => {
     document.getElementById("abspos").innerHTML = "absolute position: " +
         window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
     curPeerWrapper.broadcastCursorPosition();
-    // var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
-    // if (curPeerWrapper.crdt.replica.cursor.node !== null) {
-    //     var blah = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset;
-    //     console.log("crdt offset" + blah);
-    //     console.log("editor offset " + cur_pos);
-    //     // if (blah === cur_pos) {
-    //     curPeerWrapper.crdt.replica.insertCursor(cur_pos);
-    //     window.editor.setCursor(cur_pos);
-    //     // }
-    //     console.log("moved cursor! cursor");
-    // } else {
-    //     console.log("null cursor!");
-    // }
-    // var delta = last_pos - cur_pos;
-    // var last_pos = cur_pos;
 });
 
 // morally speaking, this is the right place to do things
@@ -103,22 +90,18 @@ window.editor.on('change', (editor, obj) => {
     console.log("fromAbs is" + fromAbs);
     var toAbs = obj.removed.length;
     var insertedText = obj.text;
-    // var removedText = obj.removed;
 
     if (obj.origin === "+delete") {
         seqops = new ops.generateSeqOpsForDelete(fromAbs, toAbs);
-        // console.log("DELETE SSEQ OP IS: " + seqops.toString());
     } else if (obj.origin === "+input") {
         seqops = new ops.generateSeqOpsForInsert(fromAbs, insertedText.reduce(
             (a, b) => a + b, ""
         ));
     } else {
         console.log("unsupported operation!");
-        //assertion.assert(true, false);
         return;
     }
     var rops = curPeerWrapper.crdt.applyLocal(seqops);
-    // console.log("ASDF" + curPeerWrapper.)
     var broadcastObj = {
         MessageType: Helpers.MessageType.SequenceOp,
         RemoteOps: rops,
@@ -126,23 +109,10 @@ window.editor.on('change', (editor, obj) => {
         messagePeerID: curPeerWrapper.sid
     };
     curPeerWrapper.broadcast(broadcastObj);
-    // console.log("remote ops" + rops.toString());
-    // for (var op of seqops) {
-    //     curPeerWrapper.crdt.applyLocal(op)
-    // }
-    // console.log(`at this point, the crdt looks like: \n\t\
-    //     ${curPeerWrapper.crdt.replica.root.prettyPrint()}`);
 });
 
 function getPos() {
     console.log(editor.getDoc().getCursorPosition().indexFromPos())
-}
-
-var curPeerWrapper = null;
-document.getElementById('init').onclick = function () {
-    curPeerWrapper = new Helpers.PeerWrapper(window.editor);
-    document.getElementById('init').disabled = true;
-    document.getElementById('myID').innerHTML = "id: " + String(curPeerWrapper.sid);
 }
 
 document.getElementById('copyID').onclick = function () {
@@ -156,12 +126,12 @@ document.getElementById('copyID').onclick = function () {
 
 document.getElementById('join').onclick = function () {
     if (curPeerWrapper === null) {
-        document.getElementById(errors).innerHTML = "peer not yet initialized!";
+        console.log("peer not yet initialized!");
     } else {
         var idRegex = /^([0-9]){10}$/;
         var inputID = document.getElementById('joinIDInput').value;
         if (!idRegex.test(String(inputID))) {
-            document.getElementById('errors').innerHTML = 'Invalid ID';
+            console.log("invalid id.")
         } else {
             curPeerWrapper.connect(inputID);
             // curPeerWrapper.PrettyPrintDirectPeerList();
@@ -171,17 +141,3 @@ document.getElementById('join').onclick = function () {
         }
     }
 }
-
-document.getElementById('broadcast').onclick = function () {
-    if (curPeerWrapper === null) {
-        document.getElementById(errors).innerHTML = "peer not yet initialized!";
-    } else {
-        // curPeerWrapper.broadcast(document.getElementById('codeInput').value);
-        curPeerWrapper.broadcast(editor.getValue());
-    }
-
-}
-
-
-
-document.getElementById('init').click();
