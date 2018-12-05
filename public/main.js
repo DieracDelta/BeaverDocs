@@ -62,7 +62,8 @@ window.editor.on('keyHandled', (editor, c, e) => {
         var delta = 1;
         curPeerWrapper.crdt.replica.moveCursor(delta);
         if (curPeerWrapper.crdt.replica.cursor.node !== null) {
-            var pos = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node)
+            var pos = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) +
+                curPeerWrapper.crdt.replica.cursor.offset
             console.log("crdt pos is:" + pos);
             window.editor.setCursor(pos);
         } else {
@@ -76,7 +77,10 @@ window.editor.on('keyHandled', (editor, c, e) => {
         var delta = -1;
         curPeerWrapper.crdt.replica.moveCursor(delta);
         if (curPeerWrapper.crdt.replica.cursor.node !== null) {
-            window.editor.setCursor(curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node))
+            var pos = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) +
+                curPeerWrapper.crdt.replica.cursor.offset
+            window.editor.setCursor(pos)
+
         } else {
             console.log("null!");
         }
