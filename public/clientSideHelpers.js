@@ -53,10 +53,13 @@ function PeerWrapper(editor) {
     });
     this.peer.on('connection', (conn) => {
         this.directlyConnectedPeers[conn.peer] = conn;
-        this.peerColors[conn.peer] = colorList[Math.floor(Math.random() * colorList.length)];
+        var newColor = colorList[Math.floor(Math.random() * colorList.length)];
+        this.peerColors[conn.peer] = newColor;
+        console.log(conn.peer);
+        console.log(typeof conn.peer);
         this.peerCursors[conn.peer] = window.editor.setBookmark({line:0, ch:0}, {widget: this.createCursorElement(conn.peer)});
-        this.IconPrintDirectPeerList();
         console.log("A new person has initiated a connection with you. Their ID is: " + String(conn.peer));
+        this.IconPrintDirectPeerList();
         this.addConnectionListeners(conn, conn.peer);
         this.broadcastPeerList();
     });
@@ -90,14 +93,18 @@ PeerWrapper.prototype = {
         }
         console.log(this.directlyConnectedPeers);
         var conn = this.peer.connect(String(id));
+        var newColor = colorList[Math.floor(Math.random() * colorList.length)];
+        this.peerColors[conn.peer] = newColor;
+        this.peerCursors[conn.peer] = window.editor.setBookmark({line:0, ch:0}, {widget: this.createCursorElement(conn.peer)});
+        this.IconPrintDirectPeerList();
         this.addConnectionListeners(conn, id);
     },
-    createCursorElement: function (peerName) {
+    createCursorElement: function (id) {
         console.log("adding cursor element");
         var cursorElement = document.createElement("span");
         cursorElement.style.borderLeftStyle = 'solid';
         cursorElement.style.borderLeftWidth = '2px';
-        cursorElement.style.borderLeftColor = this.peerColors[peerName];
+        cursorElement.style.borderLeftColor = this.peerColors[id];
         cursorElement.style.padding = 0;
         cursorElement.style.zIndex = 0;
         return cursorElement;
@@ -106,7 +113,7 @@ PeerWrapper.prototype = {
         document.getElementById('icon-peer-list').innerHTML = "";
         var allKeys = Object.keys(this.directlyConnectedPeers);
         for (i = 0; i < allKeys.length; i++) {
-            document.getElementById('icon-peer-list').innerHTML += '<button class="btn-peer" style="border-left: 1.5em solid ' + colorList[Math.floor(Math.random() * colorList.length)] + '">' + allKeys[i] + '</button>';
+            document.getElementById('icon-peer-list').innerHTML += '<button class="btn-peer" style="border-left: 1.5em solid ' + this.peerColors[allKeys[i]] + '">' + allKeys[i] + '</button>';
         }
     },
     broadcast: function (data) {
