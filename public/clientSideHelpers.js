@@ -39,6 +39,7 @@ function PeerWrapper(editor) {
     this.color = "#293462";
     this.peerColors = {};
     document.getElementById('user-dot').style.backgroundColor = this.color;
+    this.peerCursors = {};
 
     this.view = {};
     this.viewSize = 2; // how many of the most recently seen peers to keep after a merge
@@ -53,6 +54,7 @@ function PeerWrapper(editor) {
     this.peer.on('connection', (conn) => {
         this.directlyConnectedPeers[conn.peer] = conn;
         this.peerColors[conn.peer] = colorList[Math.floor(Math.random() * colorList.length)];
+        this.peerCursors[conn.peer] = window.editor.setBookmark({line:0, ch:0}, {widget: this.createCursorElement(conn.peer)});
         this.IconPrintDirectPeerList();
         console.log("A new person has initiated a connection with you. Their ID is: " + String(conn.peer));
         this.addConnectionListeners(conn, conn.peer);
@@ -84,10 +86,21 @@ PeerWrapper.prototype = {
             this.directlyConnectedPeers[id].close()
             delete this.directlyConnectedPeers[id];
             delete this.peerColors[id];
+            delete this.peerCursors[id];
         }
         console.log(this.directlyConnectedPeers);
         var conn = this.peer.connect(String(id));
         this.addConnectionListeners(conn, id);
+    },
+    createCursorElement: function (peerName) {
+        console.log("adding cursor element");
+        var cursorElement = document.createElement("span");
+        cursorElement.style.borderLeftStyle = 'solid';
+        cursorElement.style.borderLeftWidth = '2px';
+        cursorElement.style.borderLeftColor = this.peerColors[peerName];
+        cursorElement.style.padding = 0;
+        cursorElement.style.zIndex = 0;
+        return cursorElement;
     },
     IconPrintDirectPeerList: function () {
         document.getElementById('icon-peer-list').innerHTML = "";
@@ -129,6 +142,14 @@ PeerWrapper.prototype = {
             document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
             if (jsonData.MessageType === MessageType.PeerListUpdate) {
                 this.connectSet(jsonData.messageData);
+            } else if (jsonData.messageType == MessageType.CursorPositionUpdate) {
+                if (conn.peer in this.peerCursors) {
+                    this.peerCursors[conn.peer].clear();
+                    console.log("removed cursor");
+                }
+                this.peerCursors[conn.peer] = window.editor.setBookmark(jsonData.messageData, {widget: this.createCursorElement(conn.peer)});
+                console.log(typeof jsonData);
+                console.log(typeof jsonData.messageData)
             } else if (jsonData.MessageType === MessageType.SequenceOp) {
                 // TODO this is where the ordering logic should go 
                 // TODO this doesn't really make it work on multiple lines (only one) rn
@@ -212,6 +233,7 @@ PeerWrapper.prototype = {
             console.log("closed connection with peer " + conn.peer);
             delete this.directlyConnectedPeers[conn.peer];
             delete this.peerColors[conn.peer];
+            delete this.peerCursors[conn.peer];
             console.log(this.directlyConnectedPeers);
             this.IconPrintDirectPeerList();
         });
@@ -219,8 +241,18 @@ PeerWrapper.prototype = {
             console.log("got disconnected");
             delete this.directlyConnectedPeers[conn.peer];
             delete this.peerColors[conn.peer];
+            delete this.peerCursors[conn.peer];
             this.IconPrintDirectPeerList();
             this.removeFromView(id);
+        });
+    },
+    broadcastCursorPosition: function () {
+        console.log("broadcasting cursor position: ");
+        console.log(window.editor.getDoc().getCursor());
+        this.broadcast({
+            messageType: MessageType.CursorPositionUpdate,
+            messageData: {line: window.editor.getDoc().getCursor().line,
+                ch: window.editor.getDoc().getCursor().ch}
         });
     },
     broadcastPeerList: function () {
@@ -264,7 +296,8 @@ PeerWrapper.prototype = {
 var MessageType = {
     "PeerListUpdate": 0,
     "BroadcastUpdate": 1,
-    "SequenceOp": 2
+    "SequenceOp": 2,
+    "CursorPositionUpdate": 3
 }
 Object.freeze(MessageType);
 

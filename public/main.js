@@ -12,7 +12,8 @@ window.editor = CodeMirror.fromTextArea(codemirrorContent, {
 
 document.getElementById('inscpos').onclick = function () {
     // TODO add in regex match as in id checking
-    var cur_pos = parseInt(document.getElementById('cpos').value);
+    // var cur_pos = parseInt(document.getElementById('cpos').value);
+    var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
     // console.log("inserting at : " + cur_pos);
     // console.log("eq 0" + (cur_pos === 0));
     // console.log("eq 0 parseint" + (parseInt(cur_pos) === 0));
@@ -36,6 +37,7 @@ window.editor.on('cursorActivity', (editor) => {
         ", ch: " + window.editor.getDoc().getCursor()["ch"];
     document.getElementById("abspos").innerHTML = "absolute position: " +
         window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
+    curPeerWrapper.broadcastCursorPosition();
     // var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
     // if (curPeerWrapper.crdt.replica.cursor.node !== null) {
     //     var blah = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset;
