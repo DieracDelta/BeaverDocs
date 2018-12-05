@@ -4,7 +4,7 @@ const ops = require('../libraries/opTypes/Ops');
 // const rep = require('../libraries/rgasplittree/RSTReplica');
 
 var codemirrorContent = document.getElementById("codemirror-textarea");
-var last_pos = 0
+var last_pos = 0;
 
 window.editor = CodeMirror.fromTextArea(codemirrorContent, {
     lineNumbers: true,
@@ -12,8 +12,8 @@ window.editor = CodeMirror.fromTextArea(codemirrorContent, {
 
 document.getElementById('inscpos').onclick = function () {
     // TODO add in regex match as in id checking
-    // var cur_pos = parseInt(document.getElementById('cpos').value);
-    var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
+    var cur_pos = parseInt(document.getElementById('cpos').value);
+    // var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
     // console.log("inserting at : " + cur_pos);
     // console.log("eq 0" + (cur_pos === 0));
     // console.log("eq 0 parseint" + (parseInt(cur_pos) === 0));
