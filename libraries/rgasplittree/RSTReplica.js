@@ -502,8 +502,14 @@ RSTReplica.prototype = {
     // this is still broken if you end up doing blocks 
     // (morally speaking you'll need to subtract from most recent block)
     getOffset: function (key) {
+        console.log("fakk");
         var offset = 0;
         var curNode = this.head;
+        // if the head of the linked list is null ...
+        if (curNode !== null && curNode.isTombstone) {
+            console.log("entered in here ...");
+            curNode = this.getNextLiveNodeLinkedList(this.head);
+        }
         while (curNode !== null) {
             if (curNode.key !== null && s3vector.equal(curNode.key, key)) {
                 return offset;
@@ -515,12 +521,29 @@ RSTReplica.prototype = {
         }
         return offset;
     },
+    ppLinkedList: function () {
+        var rVal = "";
+        var curNode = this.head;
+        while (curNode !== null) {
+            if (!curNode.isTombstone) {
+                if (curNode.key === null) {
+                    rVal += "null";
+                } else {
+                    rVal += curNode.key;
+                }
+                rVal += "  -->  "
+            }
+            curNode = curNode.nextLink;
+        }
+        return rVal;
+
+    },
     // key: the key to search for (equivalent to RSTNode key)
     getOffsetBBT: function (key) {
         var stack = [];
         var curNode = this.root;
         var offset = 0;
-	// TODO wrong
+        // TODO wrong
         while (curNode !== null && stack.length > 0) {
             while (curNode !== null) {
                 stack.push(curNode);
@@ -541,23 +564,27 @@ RSTReplica.prototype = {
     // pull cursor to the *right* not left
     insertCursor: function (absPos) {
         var remainingOffset = absPos;
-	if(this.head.isTombstone){
-		var curNode = this.getNextLiveNodeLinkedList(this.head);
-	} else {
-		var curNode = this.head;
-	}
-	console.log("yaheeet" + curNode.toString());
+        if (this.head.isTombstone) {
+            var curNode = this.getNextLiveNodeLinkedList(this.head);
+        } else {
+            var curNode = this.head;
+        }
+        console.log("yaheeet");
         while (curNode !== null) {
+            console.log("hi there!")
+            console.log("remaining offset: " + remainingOffset);
+            console.log("remaining content offset: " + curNode.content);
             if (remainingOffset < curNode.content.length) {
+                console.log("hi there 222!")
                 this.cursor = new cursor.CursorPos(curNode, remainingOffset);
                 return
             }
             remainingOffset -= curNode.content.length;
-            var nextNode = this.getNextLiveNodeLinkedList(curNode);
-            if (nextNode === null) {
+            if (this.getNextLiveNodeLinkedList(curNode) === null) {
                 console.log("off the end of the page! attaching to last node");
                 this.cursor = new cursor.CursorPos(curNode, curNode.content.length);
             }
+            curNode = this.getNextLiveNodeLinkedList(curNode);
         }
     },
     getNextLiveNodeLinkedList: function (node) {

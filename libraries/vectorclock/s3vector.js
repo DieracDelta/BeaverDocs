@@ -46,6 +46,12 @@ function preceeds(a, b) {
 }
 
 function equal(a, b) {
+    if ((a === null && b !== null) || (a !== null && b === null)) {
+        return false;
+    }
+    if (a === null && b === null) {
+        return true;
+    }
     return a.sum == b.sum && a.sid == b.sid && a.offset == b.offset;
 }
 

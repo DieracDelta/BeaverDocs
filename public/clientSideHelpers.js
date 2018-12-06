@@ -38,7 +38,7 @@ function PeerWrapper(editor) {
     // coloring
     this.color = "#293462";
     this.peerColors = {};
-    document.getElementById('user-dot').style.backgroundColor = this.color;
+    this.peerCursors = {};
 
     // peers viewed
     // {
@@ -59,9 +59,13 @@ function PeerWrapper(editor) {
     });
     this.peer.on('connection', (conn) => {
         this.directlyConnectedPeers[conn.peer] = conn;
-        this.peerColors[conn.peer] = colorList[Math.floor(Math.random() * colorList.length)];
-        this.IconPrintDirectPeerList();
+        var newColor = colorList[Math.floor(Math.random() * colorList.length)];
+        this.peerColors[conn.peer] = newColor;
+        console.log(conn.peer);
+        console.log(typeof conn.peer);
+        this.peerCursors[conn.peer] = window.editor.setBookmark({line:0, ch:0}, {widget: this.createCursorElement(conn.peer)});
         console.log("A new person has initiated a connection with you. Their ID is: " + String(conn.peer));
+        this.IconPrintDirectPeerList();
         this.addConnectionListeners(conn, conn.peer);
         this.broadcastPeerList();
         // should not destroy reconnectInterval here. Want to continue searching through view
@@ -92,27 +96,40 @@ PeerWrapper.prototype = {
             this.directlyConnectedPeers[id].close()
             delete this.directlyConnectedPeers[id];
             delete this.peerColors[id];
+            delete this.peerCursors[id];
         }
         console.log(this.directlyConnectedPeers);
         var conn = this.peer.connect(String(id));
+        var newColor = colorList[Math.floor(Math.random() * colorList.length)];
+        this.peerColors[conn.peer] = newColor;
+        this.peerCursors[conn.peer] = window.editor.setBookmark({line:0, ch:0}, {widget: this.createCursorElement(conn.peer)});
+        this.IconPrintDirectPeerList();
         this.addConnectionListeners(conn, id);
         if (this.resetInterval != null) {
             clearInterval(this.resetInterval);
             this.resetInterval = null;
         }
     },
+    createCursorElement: function (id) {
+        console.log("adding cursor element");
+        var cursorElement = document.createElement("span");
+        cursorElement.style.borderLeftStyle = 'solid';
+        cursorElement.style.borderLeftWidth = '2px';
+        cursorElement.style.borderLeftColor = this.peerColors[id];
+        cursorElement.style.padding = 0;
+        cursorElement.style.zIndex = 0;
+        return cursorElement;
+    },
     IconPrintDirectPeerList: function () {
         document.getElementById('icon-peer-list').innerHTML = "";
         var allKeys = Object.keys(this.directlyConnectedPeers);
         for (i = 0; i < allKeys.length; i++) {
-            document.getElementById('icon-peer-list').innerHTML += '<button class="btn-peer" style="border-left: 1.5em solid ' + colorList[Math.floor(Math.random() * colorList.length)] + '">' + allKeys[i] + '</button>';
+            document.getElementById('icon-peer-list').innerHTML += '<button class="btn-peer" style="border-left: 1.5em solid ' + this.peerColors[allKeys[i]] + '">' + allKeys[i] + '</button>';
         }
     },
     broadcast: function(data) {
         for (apeerID of Object.keys(this.directlyConnectedPeers)) {
             console.log("broadcasting" + JSON.stringify(data))
-            // TODO does this need to be stringified
-            console.log(this.directlyConnectedPeers[apeerID].open);
             this.directlyConnectedPeers[apeerID].send(data);
         }
     },
@@ -125,13 +142,6 @@ PeerWrapper.prototype = {
     },
     addConnectionListeners: function(conn, id) {
         conn.on('open', () => {
-            /* TODO: Why do we need this?
-            if (id in this.directlyConnectedPeers) {
-                console.log("CLOSE 2");
-                this.directlyConnectedPeers[id].close();
-                delete this.directlyConnectedPeers[id];
-            }
-            */
             console.log("connected to " + id);
             this.directlyConnectedPeers[id] = conn;
             this.IconPrintDirectPeerList();
@@ -140,7 +150,6 @@ PeerWrapper.prototype = {
         conn.on('data', (jsonData) => {
             this.updateView(conn.peer);
             console.log("received data: " + JSON.stringify(jsonData) + " from " + conn.peer);
-            document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
             if (jsonData.messageType === MessageType.PeerListUpdate) {
                 this.connectSet(jsonData.messageData);
             } else if (jsonData.messageType === MessageType.NewscastReq) {
@@ -149,7 +158,15 @@ PeerWrapper.prototype = {
                 this.mergeViews(jsonData.messageData);
             } else if (jsonData.messageType === MessageType.NewscastResp) {
                 this.mergeViews(jsonData.messageData);
-            } else if (jsonData.messageType === MessageType.SequenceOp) {
+            } else if (jsonData.messageType == MessageType.CursorPositionUpdate) {
+                if (conn.peer in this.peerCursors) {
+                    this.peerCursors[conn.peer].clear();
+                    console.log("removed cursor");
+                }
+                this.peerCursors[conn.peer] = window.editor.setBookmark(jsonData.messageData, {widget: this.createCursorElement(conn.peer)});
+                console.log(typeof jsonData);
+                console.log(typeof jsonData.messageData)
+            } else if (jsonData.MessageType === MessageType.SequenceOp) {
                 // TODO this is where the ordering logic should go 
                 // TODO this doesn't really make it work on multiple lines (only one) rn
                 // TODO batching...
@@ -161,7 +178,6 @@ PeerWrapper.prototype = {
                     if (anOpSerialized.vPos === null) {
                         vPos = null
                     } else {
-                        // console.log("Y E E T");
                         vPos.offset = anOpSerialized.vPos.offset;
                         vPos.sum = anOpSerialized.vPos.sum;
                         vPos.sid = anOpSerialized.vPos.sid;
@@ -199,24 +215,26 @@ PeerWrapper.prototype = {
                         if (vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC)) {
                             console.log("executing opp")
                             nextOp = this.Q[q][0];
+                            var crdtPos = -1;
+                            if (this.crdt.replica.cursor.node !== null) {
+                                var crdtPos = this.crdt.replica.getOffset(this.crdt.replica.cursor.node.key) + this.crdt.replica.cursor.offset;
+                            }
+                            console.log("CRDT POS PRIOR TO INSERT: " + crdtPos);
                             this.crdt.integrateRemote(nextOp, jsonData.messagePeerID);
                             this.crdt.siteVC.processVector(this.Q[q][1]);
-                            //var cur = this;
-                            //this.editor.setValue(this.crdt.toString());
-                            //this.editor.setCursor(cur);
                         } else {
                             newQ.push(this.Q[q]);
                         }
                     }
                     this.Q = newQ;
-                    // var cur = this.editor.getCursor().indexFromPos();
-                    // this.crdt.replica.insertCursor()
                     this.editor.setValue(this.crdt.toString());
                     if (this.crdt.replica.head !== null) {
                         if (this.crdt.replica.cursor.node === null) {
                             this.crdt.replica.cursor.node = this.crdt.replica.head;
                         }
-                        this.editor.setCursor(this.editor.posFromIndex(this.crdt.replica.getOffset(this.crdt.replica.cursor.node)));
+                        var crdtPos = this.crdt.replica.getOffset(this.crdt.replica.cursor.node.key) + this.crdt.replica.cursor.offset;
+                        console.log("CRDT POS:" + crdtPos);
+                        this.editor.setCursor(this.editor.posFromIndex(crdtPos));
                     }
                 }
             }
@@ -225,6 +243,7 @@ PeerWrapper.prototype = {
             console.log("closed connection with peer " + conn.peer);
             delete this.directlyConnectedPeers[conn.peer];
             delete this.peerColors[conn.peer];
+            delete this.peerCursors[conn.peer];
             console.log(this.directlyConnectedPeers);
             this.IconPrintDirectPeerList();
             this.reconnectIfNecessary();
@@ -233,9 +252,19 @@ PeerWrapper.prototype = {
             console.log("got disconnected");
             delete this.directlyConnectedPeers[conn.peer];
             delete this.peerColors[conn.peer];
+            delete this.peerCursors[conn.peer];
             this.IconPrintDirectPeerList();
             this.removeFromView(id);
             this.reconnectIfNecessary();
+        });
+    },
+    broadcastCursorPosition: function () {
+        console.log("broadcasting cursor position: ");
+        console.log(window.editor.getDoc().getCursor());
+        this.broadcast({
+            messageType: MessageType.CursorPositionUpdate,
+            messageData: {line: window.editor.getDoc().getCursor().line,
+                ch: window.editor.getDoc().getCursor().ch}
         });
     },
     broadcastPeerList: function () {
@@ -247,7 +276,7 @@ PeerWrapper.prototype = {
     },
     updateView: function (id) {
         // if id not in this.views,
-        //  adds id to this.view and sets timestamp
+        // adds id to this.view and sets timestamp
         // otherwise updates the timestamp
         this.view[id] = Date.now();
     },
@@ -360,7 +389,8 @@ var MessageType = {
     "BroadcastUpdate": 1,
     "SequenceOp": 2,
     "NewscastReq": 3,
-    "NewscastResp": 4
+    "NewscastResp": 4,
+    "CursorPositionUpdate": 5
 }
 Object.freeze(MessageType);
 
@@ -368,4 +398,3 @@ module.exports = {
     PeerWrapper,
     MessageType
 };
-
