@@ -46,8 +46,10 @@ function PeerWrapper(editor) {
     //  ...
     // }
     this.view = {};
-    this.viewSize = 2; // how many of the most recently seen peers to keep after a merge
+    this.viewSize = 5; // how many of the most recently seen peers to keep after a merge
     this.viewTimeInterval = 1000; // milliseconds
+    this.lastReconnectAttempt = 0; // which index of the sorted view you last attempted to connect to 
+    this.reconnectInterval = null;
 
 
     this.peer.on('open', (id) => {
@@ -62,6 +64,7 @@ function PeerWrapper(editor) {
         console.log("A new person has initiated a connection with you. Their ID is: " + String(conn.peer));
         this.addConnectionListeners(conn, conn.peer);
         this.broadcastPeerList();
+        // should not destroy reconnectInterval here. Want to continue searching through view
     });
     this.peer.on('close', (conn) => {
         console.log("peer " + this.sid + " closed connection");
@@ -93,6 +96,10 @@ PeerWrapper.prototype = {
         console.log(this.directlyConnectedPeers);
         var conn = this.peer.connect(String(id));
         this.addConnectionListeners(conn, id);
+        if (this.resetInterval != null) {
+            clearInterval(this.resetInterval);
+            this.resetInterval = null;
+        }
     },
     IconPrintDirectPeerList: function () {
         document.getElementById('icon-peer-list').innerHTML = "";
@@ -133,7 +140,6 @@ PeerWrapper.prototype = {
         conn.on('data', (jsonData) => {
             this.updateView(conn.peer);
             console.log("received data: " + JSON.stringify(jsonData) + " from " + conn.peer);
-            console.log(jsonData.messageType);
             document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
             if (jsonData.messageType === MessageType.PeerListUpdate) {
                 this.connectSet(jsonData.messageData);
@@ -221,6 +227,7 @@ PeerWrapper.prototype = {
             delete this.peerColors[conn.peer];
             console.log(this.directlyConnectedPeers);
             this.IconPrintDirectPeerList();
+            this.reconnectIfNecessary();
         });
         conn.on('disconnected', () => {
             console.log("got disconnected");
@@ -228,6 +235,7 @@ PeerWrapper.prototype = {
             delete this.peerColors[conn.peer];
             this.IconPrintDirectPeerList();
             this.removeFromView(id);
+            this.reconnectIfNecessary();
         });
     },
     broadcastPeerList: function () {
@@ -307,6 +315,41 @@ PeerWrapper.prototype = {
             messageType: MessageType.NewscastResp,
             messageData: cloneView
         });
+    },
+    reconnectIfNecessary: function () {
+        console.log("RECONNECTING");
+        console.log(Object.keys(this.directlyConnectedPeers).length);
+        if (Object.keys(this.directlyConnectedPeers).length == 0) {
+            // go through view and try connecting to everyone in order.
+            // (going through people in order is a simple attempt at avoiding
+            //  partitions)
+            var keys = Object.keys(this.view).sort();
+            // rotate keys so that it starts from your peer id.
+            // (e.x. if my id is c and the peers I've seen are a, b, d, e,
+            //  I want keys to be [d, e, a, b]
+            var myLoc = 0;
+            for (var i = 0; i < keys.length; i++) {
+                if (keys[i] > this.sid) {
+                    myLoc = i;
+                    break;
+                }
+            }
+            keys = keys.slice(myLoc, keys.length).concat(keys.slice(0, myLoc));
+
+            this.lastReconnectAttempt = 0;
+            setInterval(() => {
+                this.incrementReconnectAttempt(keys.length);
+                if (keys[this.lastReconnectAttempt] == this.sid) {
+                    this.incrementReconnectAttempt(keys.length);
+                }
+                if (!Object.keys(this.directlyConnectedPeers).includes(keys[this.lastReconnectAttempt])) {
+                    this.connect(String(keys[this.lastReconnectAttempt]));
+                }
+            }, 1500); // given 1.5 seconds to try to create each connection
+        }
+    },
+    incrementReconnectAttempt: function (wrapLength) {
+        this.lastReconnectAttempt = (this.lastReconnectAttempt + 1) % wrapLength;
     }
 
 }
