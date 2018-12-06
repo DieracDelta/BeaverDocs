@@ -133,16 +133,17 @@ PeerWrapper.prototype = {
         conn.on('data', (jsonData) => {
             this.updateView(conn.peer);
             console.log("received data: " + JSON.stringify(jsonData) + " from " + conn.peer);
+            console.log(jsonData.messageType);
             document.getElementById('broadcasted').innerHTML = JSON.stringify(jsonData);
-            if (jsonData.MessageType === MessageType.PeerListUpdate) {
+            if (jsonData.messageType === MessageType.PeerListUpdate) {
                 this.connectSet(jsonData.messageData);
-            } else if (jsonData.MessageType === MessageType.Newscast) {
-                console.log(JSON.stringify(jsonData));
-                  
-                // TODO
-                // merge views
+            } else if (jsonData.messageType === MessageType.NewscastReq) {
+                // send view back and merge views
+                this.sendNewsResp(conn.peer);
                 this.mergeViews(jsonData.messageData);
-            } else if (jsonData.MessageType === MessageType.SequenceOp) {
+            } else if (jsonData.messageType === MessageType.NewscastResp) {
+                this.mergeViews(jsonData.messageData);
+            } else if (jsonData.messageType === MessageType.SequenceOp) {
                 // TODO this is where the ordering logic should go 
                 // TODO this doesn't really make it work on multiple lines (only one) rn
                 // TODO batching...
@@ -243,27 +244,33 @@ PeerWrapper.prototype = {
         this.view[id] = Date.now();
     },
     mergeViews: function (otherView) {
-        var mostRecent = {};
-        var sizeOfMostRecent = 0;
+        var mostRecent = Object.assign({}, this.view);
+        // merge this.view and otherView
         for (var id of Object.keys(otherView)) {
-            if (sizeOfMostRecent < this.viewSize) {
-                if (id in Object.keys(mostRecent)) {
-                    if (otherView[id] > mostRecent[id]) {
-                        mostRecent[id] = otherView[id];
-                    }
-                } else {
-                    mostRecent[id] = otherView[id];
+            if (Object.keys(mostRecent).includes(id)) {
+                if (otherView[id] > mostRecent[id]) {
+                      mostRecent[id] = otherView[id];
                 }
-                sizeOfMostRecent = Object.keys(mostRecent).length;
-                continue;
+            } else {
+                mostRecent[id] = otherView[id];
             }
-            // if mostRecent has reached max capacity..
-
-            // find earliest timestamp in mostRecent
-            // check if otherView[id] is later
-            // if yes, remove earliest timestamp, insert id
         }
-    }
+        // filter down to viewSize
+        while (Object.keys(mostRecent).length > this.viewSize) {
+            // find earliest timestamp in mostRecent
+            var earliestTimestamp = Number.MAX_VALUE;
+            var earliestId = 0;
+            for (var id2 of Object.keys(mostRecent)) {
+              if (mostRecent[id2] < earliestTimestamp) {
+                  earliestId = id2;
+                  earliestTImestamp = mostRecent[id2];
+              }
+            }
+            delete mostRecent[earliestId];
+            // check if otherView[id] is later
+        }
+        this.view = mostRecent;
+    },
     removeFromView: function (id) {
         delete this.view[id];
     },
@@ -273,7 +280,6 @@ PeerWrapper.prototype = {
         //  i.e. we close our browser.)
         setInterval(() => {
             const peer = this.pickRandomPeer();
-            //console.log("newscast : " + peer);
             if (peer) {
                 this.sendNewsReq(peer);
             }
@@ -290,7 +296,15 @@ PeerWrapper.prototype = {
         // add yourself to the view you send
         cloneView[this.sid] = Date.now();
         this.broadcast({
-            messageType: MessageType.Newscast,
+            messageType: MessageType.NewscastReq,
+            messageData: cloneView
+        });
+    },
+    sendNewsResp: function (peer) {
+        var cloneView = Object.assign({}, this.view);
+        cloneView[this.sid] = Date.now();
+        this.broadcast({
+            messageType: MessageType.NewscastResp,
             messageData: cloneView
         });
     }
@@ -302,7 +316,8 @@ var MessageType = {
     "PeerListUpdate": 0,
     "BroadcastUpdate": 1,
     "SequenceOp": 2,
-    "Newscast": 3
+    "NewscastReq": 3,
+    "NewscastResp": 4
 }
 Object.freeze(MessageType);
 
