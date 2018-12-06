@@ -15,23 +15,23 @@ curPeerWrapper = new Helpers.PeerWrapper(window.editor);
 document.getElementById('myID').innerHTML = "id: " + String(curPeerWrapper.sid);
 
 
-document.getElementById('inscpos').onclick = function () {
-    // TODO add in regex match as in id checking
-    var cur_pos = parseInt(document.getElementById('cpos').value);
-    // var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
-    console.log("MOTHER FUCKER" + cur_pos);
-    console.log("cur pos is: " + cur_pos);
-    if (cur_pos < 10000) {
-        curPeerWrapper.crdt.replica.insertCursor(cur_pos);
-        window.editor.setCursor({
-            line: 0,
-            ch: cur_pos
-        });
-    }
-    console.log("crdt looks like: " + curPeerWrapper.crdt.replica.ppLinkedList());
-    console.log("and the key is: " + curPeerWrapper.crdt.replica.cursor.node.key.toString());
-    console.log("cursor now at: " + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset);
-}
+// document.getElementById('inscpos').onclick = function () {
+//     // TODO add in regex match as in id checking
+//     var cur_pos = parseInt(document.getElementById('cpos').value);
+//     // var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
+//     // console.log("MOTHER FUCKER" + cur_pos);
+//     // console.log("cur pos is: " + cur_pos);
+//     if (cur_pos < 10000) {
+//         curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+//         window.editor.setCursor({
+//             line: 0,
+//             ch: cur_pos
+//         });
+//     }
+// console.log("crdt looks like: " + curPeerWrapper.crdt.replica.ppLinkedList());
+// console.log("and the key is: " + curPeerWrapper.crdt.replica.cursor.node.key.toString());
+// console.log("cursor now at: " + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset);
+// }
 
 // var lastActivityWasInsertOrDelete = false;
 
@@ -123,15 +123,15 @@ window.editor.on('cursorActivity', (editor) => {
             if (cur_pos < 10000) {
                 curPeerWrapper.crdt.replica.insertCursor(cur_pos);
                 window.editor.setCursor({
-                    line: 0,
-                    ch: cur_pos
+                    line: window.editor.posFromIndex(cur_pos).line,
+                    ch: window.editor.posFromIndex(cur_pos).ch
                 });
-                console.log("shit mate")
-                if (curPeerWrapper.crdt.replica.cursor.node !== null) {
-                    console.log("inserting CRDT AT YEET: " + curPeerWrapper.crdt.replica.cursor.offset + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key));
-                    console.log("inserting LOCAL AT YEET: " + cur_pos);
-                }
-                console.log("sad")
+                // console.log("shit mate")
+                // if (curPeerWrapper.crdt.replica.cursor.node !== null) {
+                // console.log("inserting CRDT AT YEET: " + curPeerWrapper.crdt.replica.cursor.offset + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key));
+                // console.log("inserting LOCAL AT YEET: " + cur_pos);
+                // }
+                // console.log("sad")
             }
         }
 
@@ -141,7 +141,7 @@ window.editor.on('cursorActivity', (editor) => {
 
 // morally speaking, this is the right place to do things
 window.editor.on('keyHandled', (editor, c, e) => {
-    console.log('here');
+    console.log('CHARCTER PRESSED ' + c);
     if (c.origin === 'setValue') {
         var cur_pos = window.editor.getDoc().indexFromPos({
             ch: c.from.ch,
@@ -150,25 +150,25 @@ window.editor.on('keyHandled', (editor, c, e) => {
         if (cur_pos < 10000) {
             curPeerWrapper.crdt.replica.insertCursor(cur_pos);
             window.editor.setCursor({
-                line: 0,
-                ch: cur_pos
+                line: window.editor.getDoc().posFromIndex(cur_pos).line,
+                ch: window.editor.getDoc().posFromIndex(cur_pos).ch
             });
         }
     }
     if (c === "Right") {
-        console.log("right yeet")
+        // console.log("right yeet")
         var delta = 1;
         curPeerWrapper.crdt.replica.moveCursor(delta);
         if (curPeerWrapper.crdt.replica.cursor.node !== null) {
             var pos = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) +
                 curPeerWrapper.crdt.replica.cursor.offset
-            console.log("crdt pos is:" + pos);
+            // console.log("crdt pos is:" + pos);
             window.editor.setCursor({
-                line: 0,
-                ch: pos
+                line: window.editor.getDoc().posFromIndex(pos).line,
+                ch: window.editor.getDoc().posFromIndex(pos).ch
             });
         } else {
-            console.log("null!");
+            // console.log("null!");
         }
     }
 
@@ -182,8 +182,8 @@ window.editor.on('keyHandled', (editor, c, e) => {
                 curPeerWrapper.crdt.replica.cursor.offset
             console.log("Moving left to: " + pos);
             window.editor.setCursor({
-                line: 0,
-                ch: pos
+                line: window.editor.getDoc().posFromEditor(pos).line,
+                ch: window.editor.getDoc().posFromEditor(pos).ch
             })
 
         } else {
@@ -192,7 +192,10 @@ window.editor.on('keyHandled', (editor, c, e) => {
     }
 });
 
+// window.editor.lineSeparator = ",";
+
 window.editor.on('change', (editor, obj) => {
+    console.log("OBJ CHANGED: " + obj);
     document.getElementById("lastchange").innerHTML =
         (
             `Last change metadata: \
@@ -207,13 +210,23 @@ window.editor.on('change', (editor, obj) => {
     console.log("fromAbs is" + fromAbs);
     var toAbs = obj.removed.length;
     var insertedText = obj.text;
+    console.log("FROM: " + fromAbs);
+    console.log("To: " + toAbs);
+    console.log("INSERTED TEXT IS: " + obj.text);
+    console.log("INSERTED TEXT LEN IS : " + obj.text.length);
+    console.log("reduced thing is: " + insertedText.reduce((a, b) => a + b, ""))
+    console.log("SHIT MAN " + (insertedText.reduce((a, b) => a + b, "") === "\n"))
 
     if (obj.origin === "+delete") {
         seqops = new ops.generateSeqOpsForDelete(fromAbs, toAbs);
     } else if (obj.origin === "+input") {
-        seqops = new ops.generateSeqOpsForInsert(fromAbs, insertedText.reduce(
-            (a, b) => a + b, ""
-        ));
+        console.log("SHIT MAN " + insertedText.reduce((a, b) => a + b, ""))
+        var rText = insertedText.reduce((a, b) => a + b, "");
+        if (insertedText.length == 2 && (rText == "")) {
+            console.log("fuuuuck 2")
+            rText = "\n";
+        }
+        seqops = new ops.generateSeqOpsForInsert(fromAbs, rText);
     } else {
         console.log("unsupported operation!");
         return;
