@@ -569,14 +569,20 @@ RSTReplica.prototype = {
         } else {
             var curNode = this.head;
         }
-        console.log("yaheeet");
+        // console.log("yaheeet");
         while (curNode !== null) {
             console.log("hi there!")
             console.log("remaining offset: " + remainingOffset);
             console.log("remaining content offset: " + curNode.content);
             if (remainingOffset < curNode.content.length) {
-                console.log("hi there 222!")
+                // console.log("hi there 222!")
                 this.cursor = new cursor.CursorPos(curNode, remainingOffset);
+                if (this.cursor.node !== null) {
+                    console.log("had: " + absPos)
+                    var yeet = this.cursor.offset
+                    var yeet2 = this.getOffset(this.cursor.node.key)
+                    console.log("now at: " + yeet + ", " + yeet2);
+                }
                 return
             }
             remainingOffset -= curNode.content.length;
@@ -585,6 +591,12 @@ RSTReplica.prototype = {
                 this.cursor = new cursor.CursorPos(curNode, curNode.content.length);
             }
             curNode = this.getNextLiveNodeLinkedList(curNode);
+        }
+        if (this.cursor.node !== null) {
+            console.log("had: " + absPos)
+            var yeet = this.cursor.offset
+            var yeet2 = this.getOffset(this.cursor.node.key)
+            console.log("now at: " + yeet + ", " + yeet2);
         }
     },
     getNextLiveNodeLinkedList: function (node) {
@@ -611,22 +623,33 @@ RSTReplica.prototype = {
     // you just get the next right node or next left node ez pz
     // TODO only works for amount = +-1 rn
     moveCursor: function (amount) {
+        // console.log("Calling Move Cursor on amount: " + amount);
+        // var curpos = this.cursor.offset + this.getOffset(this.cursor.node.key);
+        // console.log("OFFSET CURSOR" + this.cursor.offset)
+        // console.log("OFFSET CURSOR NODE" + this.getOffset(this.cursor.node.key))
+        // console.log("before moving cursor, cursor is in position" + curpos);
         var newOffset = amount + this.cursor.offset
         if (newOffset < 0) {
-            var oldnode = this.cursor.node;
-            var newNode = this.getNextLeftTreeNode(this.cursor.node);
+            // console.log("o shiiit");
+            var oldNode = this.cursor.node;
+            var newNode = this.getNextLeftTreeNode(oldNode);
             if (newNode !== null) {
+                // console.log("hell yah");
                 this.cursor = new cursor.CursorPos(newNode, newNode.content.length + newOffset);
             }
         } else if (this.cursor.node.content.length < newOffset) {
             var oldNode = this.cursor.node;
-            var newNode = this.getNextRightTreeNode(this.cursor.node);
+            // console.log("extrashit");
+            var newNode = this.getNextLiveNodeLinkedList(oldNode);
             if (newNode !== null) {
                 this.cursor = new cursor.CursorPos(newNode, newOffset - oldNode.content.length);
             }
         } else {
+            // console.log("okden");
             this.cursor.offset += amount;
         }
+        curpos = this.cursor.offset + this.getOffset(this.cursor.node.key);
+        // console.log("after moving cursor, cursor is in position" + curpos);
     },
     // TODO implement these (they're literally just get the successor and predecessor nodes...)
     // https: //www.geeksforgeeks.org/inorder-successor-in-binary-search-tree/
@@ -634,6 +657,7 @@ RSTReplica.prototype = {
     // node is RSTNode
 
     // node is RSTNode 
+    // this is actually so dumb
     getNextRightTreeNode: function (node) {
         var sNode = this.head;
         if (node === null) {
@@ -651,6 +675,7 @@ RSTReplica.prototype = {
     getNextLeftTreeNode: function (node) {
         var sNode = this.head;
         if (node === null || sNode === null) {
+            console.log("MOTHERFUCK YOU")
             return null;
         }
         while (sNode !== null) {
@@ -660,6 +685,7 @@ RSTReplica.prototype = {
             }
             sNode = nn;
         }
+        console.log("FUCK YOU")
         return null;
     }
 }

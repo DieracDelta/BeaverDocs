@@ -15,52 +15,144 @@ curPeerWrapper = new Helpers.PeerWrapper(window.editor);
 document.getElementById('myID').innerHTML = "id: " + String(curPeerWrapper.sid);
 
 
-// document.getElementById('inscpos').onclick = function () {
+document.getElementById('inscpos').onclick = function () {
     // TODO add in regex match as in id checking
-    // var cur_pos = parseInt(document.getElementById('cpos').value);
+    var cur_pos = parseInt(document.getElementById('cpos').value);
     // var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
-    // console.log("cur pos is: " + cur_pos);
-    // if (cur_pos < 10000) {
-    //     curPeerWrapper.crdt.replica.insertCursor(cur_pos);
-    //     window.editor.setCursor({line: 0, ch: cur_pos});
-    // }
-    // console.log("crdt looks like: " + curPeerWrapper.crdt.replica.ppLinkedList());
-    // console.log("and the key is: " + curPeerWrapper.crdt.replica.cursor.node.key.toString());
-    // console.log("cursor now at: " + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset);
-// }
+    console.log("MOTHER FUCKER" + cur_pos);
+    console.log("cur pos is: " + cur_pos);
+    if (cur_pos < 10000) {
+        curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+        window.editor.setCursor({
+            line: 0,
+            ch: cur_pos
+        });
+    }
+    console.log("crdt looks like: " + curPeerWrapper.crdt.replica.ppLinkedList());
+    console.log("and the key is: " + curPeerWrapper.crdt.replica.cursor.node.key.toString());
+    console.log("cursor now at: " + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset);
+}
+
+// var lastActivityWasInsertOrDelete = false;
 
 window.editor.on('beforeChange', (editor, c) => {
-    console.log(c);
+    // console.log(c);
+    // if (c.origin === '+input' || c.origin === '+delete') {
+    //     var cur_pos = window.editor.getDoc().indexFromPos({
+    //         ch: c.from.ch,
+    //         line: c.from.line
+    //     })
+    //     if (cur_pos < 10000) {
+    //         console.log("CURRENT POS: " + cur_pos)
+    //         curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+    //         window.editor.setCursor({
+    //             line: 0,
+    //             ch: cur_pos
+    //         });
+    //         if (curPeerWrapper.crdt.replica.cursor.node !== null) {
+    //             var crdtcurpos = curPeerWrapper.crdt.getOffset(curPeerWrapper.crdt.replica.node.key)
+    //             console.log("inserting CRDT AT YEET: " +
+    //                 curPeerWrapper.crdt.replica.cursor.offset + crdtcurpos)
+    //             console.log("inserting LOCAL AT YEET: " + cur_pos)
+    //         }
+    //     }
+    // }
+
+    // console.log("C ORGIN IS: " + c.origin)
     if (c.origin === '+input' || c.origin === '+delete') {
-        var cur_pos = window.editor.getDoc().indexFromPos({ch: c.from.ch, line: c.from.line})
-        if (cur_pos < 10000) {
-            curPeerWrapper.crdt.replica.insertCursor(cur_pos);
-            window.editor.setCursor({line: 0, ch: cur_pos});
-        }
+        // lastActivityWasInsertOrDelete = true;
+        //     var cur_pos = window.editor.getDoc().indexFromPos({
+        //         ch: c.from.ch,
+        //         line: c.from.line
+        //     })
+        //     if (cur_pos < 10000) {
+        //         curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+        //         window.editor.setCursor({
+        //             line: 0,
+        //             ch: cur_pos
+        //         });
+        //         console.log("shit mate")
+        //         if (curPeerWrapper.crdt.replica.cursor.node !== null) {
+        //             console.log("inserting CRDT AT YEET: " + curPeerWrapper.crdt.replica.cursor.offset + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key));
+        //             console.log("inserting LOCAL AT YEET: " + cur_pos);
+        //         }
+        //         console.log("sad")
+        //     }
     }
 });
+
+
+
+var movedByMouse = false;
+
+window.editor.on("mousedown", function () {
+    movedByMouse = true;
+});
+
+editor.on("keydown", function () {
+    if (isMovementKey(event.which)) {
+        movedByMouse = false;
+    }
+});
+
+editor.on("beforeChange", function () {
+    movedByMouse = false;
+});
+
+function isMovementKey(keyCode) {
+    return 33 <= keyCode && keyCode <= 40;
+};
 
 // cut and paste code from here: 
 // https://stackoverflow.com/questions/40282995/how-can-i-act-on-cursor-activity-originating-from-mouse-clicks-and-not-keyboard
 // to detect clicks
 // on the click look at the position of the cursor
 window.editor.on('cursorActivity', (editor) => {
+    console.log("MOTHER FUCKER")
     document.getElementById("relpos").innerHTML = "line: " +
         window.editor.getDoc().getCursor()["line"] +
         ", ch: " + window.editor.getDoc().getCursor()["ch"];
     document.getElementById("abspos").innerHTML = "absolute position: " +
         window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
     curPeerWrapper.broadcastCursorPosition();
+
+    if (movedByMouse) {
+        movedByMouse = false;
+        if (!window.editor.getSelection()) {
+            var cur_pos = window.editor.indexFromPos(window.editor.getDoc().getCursor());
+            if (cur_pos < 10000) {
+                curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+                window.editor.setCursor({
+                    line: 0,
+                    ch: cur_pos
+                });
+                console.log("shit mate")
+                if (curPeerWrapper.crdt.replica.cursor.node !== null) {
+                    console.log("inserting CRDT AT YEET: " + curPeerWrapper.crdt.replica.cursor.offset + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key));
+                    console.log("inserting LOCAL AT YEET: " + cur_pos);
+                }
+                console.log("sad")
+            }
+        }
+
+    }
+
 });
 
 // morally speaking, this is the right place to do things
 window.editor.on('keyHandled', (editor, c, e) => {
     console.log('here');
     if (c.origin === 'setValue') {
-        var cur_pos = window.editor.getDoc().indexFromPos({ch: c.from.ch, line: c.from.line})
+        var cur_pos = window.editor.getDoc().indexFromPos({
+            ch: c.from.ch,
+            line: c.from.line
+        })
         if (cur_pos < 10000) {
             curPeerWrapper.crdt.replica.insertCursor(cur_pos);
-            window.editor.setCursor({line: 0, ch: cur_pos});
+            window.editor.setCursor({
+                line: 0,
+                ch: cur_pos
+            });
         }
     }
     if (c === "Right") {
@@ -71,7 +163,10 @@ window.editor.on('keyHandled', (editor, c, e) => {
             var pos = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) +
                 curPeerWrapper.crdt.replica.cursor.offset
             console.log("crdt pos is:" + pos);
-            window.editor.setCursor(pos);
+            window.editor.setCursor({
+                line: 0,
+                ch: pos
+            });
         } else {
             console.log("null!");
         }
@@ -85,7 +180,11 @@ window.editor.on('keyHandled', (editor, c, e) => {
         if (curPeerWrapper.crdt.replica.cursor.node !== null) {
             var pos = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) +
                 curPeerWrapper.crdt.replica.cursor.offset
-            window.editor.setCursor(pos)
+            console.log("Moving left to: " + pos);
+            window.editor.setCursor({
+                line: 0,
+                ch: pos
+            })
 
         } else {
             console.log("null!");

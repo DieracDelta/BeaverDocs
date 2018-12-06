@@ -18,3 +18,5 @@ npm install # you don't need to do this if you've already npm installed
 npm run-script test
 ```
 
+Then check out the coverage folder for test results.
+

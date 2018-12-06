@@ -56,7 +56,12 @@ function PeerWrapper(editor) {
         this.peerColors[conn.peer] = newColor;
         console.log(conn.peer);
         console.log(typeof conn.peer);
-        this.peerCursors[conn.peer] = window.editor.setBookmark({line:0, ch:0}, {widget: this.createCursorElement(conn.peer)});
+        this.peerCursors[conn.peer] = window.editor.setBookmark({
+            line: 0,
+            ch: 0
+        }, {
+            widget: this.createCursorElement(conn.peer)
+        });
         console.log("A new person has initiated a connection with you. Their ID is: " + String(conn.peer));
         this.IconPrintDirectPeerList();
         this.addConnectionListeners(conn, conn.peer);
@@ -94,7 +99,12 @@ PeerWrapper.prototype = {
         var conn = this.peer.connect(String(id));
         var newColor = colorList[Math.floor(Math.random() * colorList.length)];
         this.peerColors[conn.peer] = newColor;
-        this.peerCursors[conn.peer] = window.editor.setBookmark({line:0, ch:0}, {widget: this.createCursorElement(conn.peer)});
+        this.peerCursors[conn.peer] = window.editor.setBookmark({
+            line: 0,
+            ch: 0
+        }, {
+            widget: this.createCursorElement(conn.peer)
+        });
         this.IconPrintDirectPeerList();
         this.addConnectionListeners(conn, id);
     },
@@ -140,13 +150,13 @@ PeerWrapper.prototype = {
             if (jsonData.MessageType === MessageType.PeerListUpdate) {
                 this.connectSet(jsonData.messageData);
             } else if (jsonData.messageType == MessageType.CursorPositionUpdate) {
-                if (conn.peer in this.peerCursors) {
-                    this.peerCursors[conn.peer].clear();
-                    console.log("removed cursor");
-                }
-                this.peerCursors[conn.peer] = window.editor.setBookmark(jsonData.messageData, {widget: this.createCursorElement(conn.peer)});
-                console.log(typeof jsonData);
-                console.log(typeof jsonData.messageData)
+                // if (conn.peer in this.peerCursors) {
+                //     this.peerCursors[conn.peer].clear();
+                //     console.log("removed cursor");
+                // }
+                // this.peerCursors[conn.peer] = window.editor.setBookmark(jsonData.messageData, {widget: this.createCursorElement(conn.peer)});
+                // console.log(typeof jsonData);
+                // console.log(typeof jsonData.messageData)
             } else if (jsonData.MessageType === MessageType.SequenceOp) {
                 // TODO this is where the ordering logic should go 
                 // TODO this doesn't really make it work on multiple lines (only one) rn
@@ -242,8 +252,10 @@ PeerWrapper.prototype = {
         console.log(window.editor.getDoc().getCursor());
         this.broadcast({
             messageType: MessageType.CursorPositionUpdate,
-            messageData: {line: window.editor.getDoc().getCursor().line,
-                ch: window.editor.getDoc().getCursor().ch}
+            messageData: {
+                line: window.editor.getDoc().getCursor().line,
+                ch: window.editor.getDoc().getCursor().ch
+            }
         });
     },
     broadcastPeerList: function () {
