@@ -40,9 +40,16 @@ function PeerWrapper(editor) {
     this.peerColors = {};
     this.peerCursors = {};
 
+    // peers viewed
+    // {
+    //  peerId: timestamp,
+    //  ...
+    // }
     this.view = {};
-    this.viewSize = 2; // how many of the most recently seen peers to keep after a merge
+    this.viewSize = 5; // how many of the most recently seen peers to keep after a merge
     this.viewTimeInterval = 1000; // milliseconds
+    this.lastReconnectAttempt = 0; // which index of the sorted view you last attempted to connect to 
+    this.reconnectInterval = null;
 
 
     this.peer.on('open', (id) => {
@@ -61,6 +68,7 @@ function PeerWrapper(editor) {
         this.IconPrintDirectPeerList();
         this.addConnectionListeners(conn, conn.peer);
         this.broadcastPeerList();
+        // should not destroy reconnectInterval here. Want to continue searching through view
     });
     this.peer.on('close', (conn) => {
         console.log("peer " + this.sid + " closed connection");
@@ -81,7 +89,7 @@ PeerWrapper.prototype = {
             }
         }
     },
-    connect: function (id) {
+    connect: function(id) {
         console.log(this.directlyConnectedPeers)
         if (id in this.directlyConnectedPeers) {
             console.log("CLOSE");
@@ -97,6 +105,10 @@ PeerWrapper.prototype = {
         this.peerCursors[conn.peer] = window.editor.setBookmark({line:0, ch:0}, {widget: this.createCursorElement(conn.peer)});
         this.IconPrintDirectPeerList();
         this.addConnectionListeners(conn, id);
+        if (this.resetInterval != null) {
+            clearInterval(this.resetInterval);
+            this.resetInterval = null;
+        }
     },
     createCursorElement: function (id) {
         console.log("adding cursor element");
@@ -115,20 +127,20 @@ PeerWrapper.prototype = {
             document.getElementById('icon-peer-list').innerHTML += '<button class="btn-peer" style="border-left: 1.5em solid ' + this.peerColors[allKeys[i]] + '">' + allKeys[i] + '</button>';
         }
     },
-    broadcast: function (data) {
+    broadcast: function(data) {
         for (apeerID of Object.keys(this.directlyConnectedPeers)) {
             console.log("broadcasting" + JSON.stringify(data))
             this.directlyConnectedPeers[apeerID].send(data);
         }
     },
-    relay: function (fromPeer, data) {
+    relay: function(fromPeer, data) {
         for (apeerId of Object.keys(this.directlyConnectedPeers)) {
             if (apeerId !== fromPeer) {
                 this.directlyConnectedPeers[apeerID].send(JSON.stringify(data));
             }
         }
     },
-    addConnectionListeners: function (conn, id) {
+    addConnectionListeners: function(conn, id) {
         conn.on('open', () => {
             console.log("connected to " + id);
             this.directlyConnectedPeers[id] = conn;
@@ -136,9 +148,16 @@ PeerWrapper.prototype = {
             this.updateView(id);
         });
         conn.on('data', (jsonData) => {
+            this.updateView(conn.peer);
             console.log("received data: " + JSON.stringify(jsonData) + " from " + conn.peer);
-            if (jsonData.MessageType === MessageType.PeerListUpdate) {
+            if (jsonData.messageType === MessageType.PeerListUpdate) {
                 this.connectSet(jsonData.messageData);
+            } else if (jsonData.messageType === MessageType.NewscastReq) {
+                // send view back and merge views
+                this.sendNewsResp(conn.peer);
+                this.mergeViews(jsonData.messageData);
+            } else if (jsonData.messageType === MessageType.NewscastResp) {
+                this.mergeViews(jsonData.messageData);
             } else if (jsonData.messageType == MessageType.CursorPositionUpdate) {
                 if (conn.peer in this.peerCursors) {
                     this.peerCursors[conn.peer].clear();
@@ -227,6 +246,7 @@ PeerWrapper.prototype = {
             delete this.peerCursors[conn.peer];
             console.log(this.directlyConnectedPeers);
             this.IconPrintDirectPeerList();
+            this.reconnectIfNecessary();
         });
         conn.on('disconnected', () => {
             console.log("got disconnected");
@@ -235,6 +255,7 @@ PeerWrapper.prototype = {
             delete this.peerCursors[conn.peer];
             this.IconPrintDirectPeerList();
             this.removeFromView(id);
+            this.reconnectIfNecessary();
         });
     },
     broadcastCursorPosition: function () {
@@ -259,6 +280,34 @@ PeerWrapper.prototype = {
         // otherwise updates the timestamp
         this.view[id] = Date.now();
     },
+    mergeViews: function (otherView) {
+        var mostRecent = Object.assign({}, this.view);
+        // merge this.view and otherView
+        for (var id of Object.keys(otherView)) {
+            if (Object.keys(mostRecent).includes(id)) {
+                if (otherView[id] > mostRecent[id]) {
+                      mostRecent[id] = otherView[id];
+                }
+            } else {
+                mostRecent[id] = otherView[id];
+            }
+        }
+        // filter down to viewSize
+        while (Object.keys(mostRecent).length > this.viewSize) {
+            // find earliest timestamp in mostRecent
+            var earliestTimestamp = Number.MAX_VALUE;
+            var earliestId = 0;
+            for (var id2 of Object.keys(mostRecent)) {
+              if (mostRecent[id2] < earliestTimestamp) {
+                  earliestId = id2;
+                  earliestTImestamp = mostRecent[id2];
+              }
+            }
+            delete mostRecent[earliestId];
+            // check if otherView[id] is later
+        }
+        this.view = mostRecent;
+    },
     removeFromView: function (id) {
         delete this.view[id];
     },
@@ -268,9 +317,8 @@ PeerWrapper.prototype = {
         //  i.e. we close our browser.)
         setInterval(() => {
             const peer = this.pickRandomPeer();
-            //console.log("newscast : " + peer);
             if (peer) {
-                //sendNewsReq(peer);
+                this.sendNewsReq(peer);
             }
         }, this.viewTimeInterval);
     },
@@ -279,6 +327,58 @@ PeerWrapper.prototype = {
         const key = keys[Math.floor(Math.random() * keys.length)];
         console.log("newscasting to : " + key);
         return this.directlyConnectedPeers[key];
+    },
+    sendNewsReq: function (peer) {
+        var cloneView = Object.assign({}, this.view);
+        // add yourself to the view you send
+        cloneView[this.sid] = Date.now();
+        this.broadcast({
+            messageType: MessageType.NewscastReq,
+            messageData: cloneView
+        });
+    },
+    sendNewsResp: function (peer) {
+        var cloneView = Object.assign({}, this.view);
+        cloneView[this.sid] = Date.now();
+        this.broadcast({
+            messageType: MessageType.NewscastResp,
+            messageData: cloneView
+        });
+    },
+    reconnectIfNecessary: function () {
+        console.log("RECONNECTING");
+        console.log(Object.keys(this.directlyConnectedPeers).length);
+        if (Object.keys(this.directlyConnectedPeers).length == 0) {
+            // go through view and try connecting to everyone in order.
+            // (going through people in order is a simple attempt at avoiding
+            //  partitions)
+            var keys = Object.keys(this.view).sort();
+            // rotate keys so that it starts from your peer id.
+            // (e.x. if my id is c and the peers I've seen are a, b, d, e,
+            //  I want keys to be [d, e, a, b]
+            var myLoc = 0;
+            for (var i = 0; i < keys.length; i++) {
+                if (keys[i] > this.sid) {
+                    myLoc = i;
+                    break;
+                }
+            }
+            keys = keys.slice(myLoc, keys.length).concat(keys.slice(0, myLoc));
+
+            this.lastReconnectAttempt = 0;
+            setInterval(() => {
+                this.incrementReconnectAttempt(keys.length);
+                if (keys[this.lastReconnectAttempt] == this.sid) {
+                    this.incrementReconnectAttempt(keys.length);
+                }
+                if (!Object.keys(this.directlyConnectedPeers).includes(keys[this.lastReconnectAttempt])) {
+                    this.connect(String(keys[this.lastReconnectAttempt]));
+                }
+            }, 1500); // given 1.5 seconds to try to create each connection
+        }
+    },
+    incrementReconnectAttempt: function (wrapLength) {
+        this.lastReconnectAttempt = (this.lastReconnectAttempt + 1) % wrapLength;
     }
 
 }
@@ -288,7 +388,9 @@ var MessageType = {
     "PeerListUpdate": 0,
     "BroadcastUpdate": 1,
     "SequenceOp": 2,
-    "CursorPositionUpdate": 3
+    "NewscastReq": 3,
+    "NewscastResp": 4,
+    "CursorPositionUpdate": 5
 }
 Object.freeze(MessageType);
 
