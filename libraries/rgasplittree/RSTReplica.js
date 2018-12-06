@@ -580,11 +580,11 @@ RSTReplica.prototype = {
                 return
             }
             remainingOffset -= curNode.content.length;
-            curNode = this.getNextLiveNodeLinkedList(curNode);
-            if (curNode === null) {
+            if (this.getNextLiveNodeLinkedList(curNode) === null) {
                 console.log("off the end of the page! attaching to last node");
                 this.cursor = new cursor.CursorPos(curNode, curNode.content.length);
             }
+            curNode = this.getNextLiveNodeLinkedList(curNode);
         }
     },
     getNextLiveNodeLinkedList: function (node) {

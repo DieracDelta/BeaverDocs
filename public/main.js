@@ -15,19 +15,30 @@ curPeerWrapper = new Helpers.PeerWrapper(window.editor);
 document.getElementById('myID').innerHTML = "id: " + String(curPeerWrapper.sid);
 
 
-document.getElementById('inscpos').onclick = function () {
+// document.getElementById('inscpos').onclick = function () {
     // TODO add in regex match as in id checking
     // var cur_pos = parseInt(document.getElementById('cpos').value);
-    var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
-    console.log("cur pos is: " + cur_pos);
-    if (cur_pos < 10000) {
-        curPeerWrapper.crdt.replica.insertCursor(cur_pos);
-        window.editor.setCursor({line: 0, ch: cur_pos});
+    // var cur_pos = window.editor.getDoc().indexFromPos(window.editor.getDoc().getCursor());
+    // console.log("cur pos is: " + cur_pos);
+    // if (cur_pos < 10000) {
+    //     curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+    //     window.editor.setCursor({line: 0, ch: cur_pos});
+    // }
+    // console.log("crdt looks like: " + curPeerWrapper.crdt.replica.ppLinkedList());
+    // console.log("and the key is: " + curPeerWrapper.crdt.replica.cursor.node.key.toString());
+    // console.log("cursor now at: " + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset);
+// }
+
+window.editor.on('beforeChange', (editor, c) => {
+    console.log(c);
+    if (c.origin === '+input' || c.origin === '+delete') {
+        var cur_pos = window.editor.getDoc().indexFromPos({ch: c.from.ch, line: c.from.line})
+        if (cur_pos < 10000) {
+            curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+            window.editor.setCursor({line: 0, ch: cur_pos});
+        }
     }
-    console.log("crdt looks like: " + curPeerWrapper.crdt.replica.ppLinkedList());
-    console.log("and the key is: " + curPeerWrapper.crdt.replica.cursor.node.key.toString());
-    console.log("cursor now at: " + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset);
-}
+});
 
 // cut and paste code from here: 
 // https://stackoverflow.com/questions/40282995/how-can-i-act-on-cursor-activity-originating-from-mouse-clicks-and-not-keyboard
@@ -44,6 +55,14 @@ window.editor.on('cursorActivity', (editor) => {
 
 // morally speaking, this is the right place to do things
 window.editor.on('keyHandled', (editor, c, e) => {
+    console.log('here');
+    if (c.origin === 'setValue') {
+        var cur_pos = window.editor.getDoc().indexFromPos({ch: c.from.ch, line: c.from.line})
+        if (cur_pos < 10000) {
+            curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+            window.editor.setCursor({line: 0, ch: cur_pos});
+        }
+    }
     if (c === "Right") {
         console.log("right yeet")
         var delta = 1;
@@ -72,7 +91,6 @@ window.editor.on('keyHandled', (editor, c, e) => {
             console.log("null!");
         }
     }
-
 });
 
 window.editor.on('change', (editor, obj) => {
