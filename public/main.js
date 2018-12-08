@@ -178,7 +178,7 @@ window.editor.on('change', (editor, obj) => {
     if (insertedText.reduce((a, b) => a + b, "") == curPeerWrapper.crdt.toString() || insertedText == curPeerWrapper.crdt.toString()) {
         console.log("YOU REALLY FUCKED UP THIS TIME")
         if (curPeerWrapper.crdt.replica.cursor.node !== null) {
-            var new_pos = (curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + ',' + curPeerWrapper.crdt.replica.cursor.offset);
+            var new_pos = (curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset);
             console.log("THE CRDT POSITION NOW IS: " + new_pos)
 
         }
@@ -200,15 +200,17 @@ window.editor.on('change', (editor, obj) => {
         return;
     }
     if (curPeerWrapper.crdt.replica.cursor.node !== null) {
-        var new_pos = (curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + ',' + curPeerWrapper.crdt.replica.cursor.offset);
+        var new_pos = (curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset);
         console.log("PRE INSERTION crdt: " + new_pos);
         console.log("PRE INSERTION: position" + getPos())
     }
     var rops = curPeerWrapper.crdt.applyLocal(seqops);
     if (curPeerWrapper.crdt.replica.cursor.node !== null) {
-        var new_pos = (curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + ',' + curPeerWrapper.crdt.replica.cursor.offset);
+        var new_pos = (curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset);
         console.log("POST INSERTION crdt: " + new_pos);
         console.log("POST INSERTION: position" + getPos())
+        console.log("POST INSERTION LINE:" + window.editor.posFromIndex(new_pos).line)
+        console.log("POST INSERTION CHARACTER:" + window.editor.posFromIndex(new_pos).ch)
         window.editor.setCursor({
             line: window.editor.posFromIndex(new_pos).line,
             ch: window.editor.posFromIndex(new_pos).ch
