@@ -5,6 +5,7 @@ const s3v = require("../libraries/vectorclock/s3vector");
 const generate = require('nanoid/generate');
 const peerjs = require('peerjs');
 const PORT = 2718;
+const hash = require("object-hash");
 const vectorclock = require("../libraries/vectorclock/vectorClock");
 // TODO things to implement
 // shared list of all peers
@@ -51,6 +52,8 @@ function PeerWrapper(editor) {
     this.lastReconnectAttempt = 0; // which index of the sorted view you last attempted to connect to 
     this.reconnectInterval = null;
 
+    // contains hashes of all messages seen
+    this.messagesSeen = [];
 
     this.peer.on('open', (id) => {
         console.log("Your ID is " + id);
@@ -184,6 +187,7 @@ PeerWrapper.prototype = {
             } else if (jsonData.messageType === MessageType.NewscastResp) {
                 this.mergeViews(jsonData.messageData);
             } else if (jsonData.messageType == MessageType.CursorPositionUpdate) {
+                this.forwardMessage(jsonData);
                 if (Object.keys(this.peerCursors).includes(conn.peer)) {
                     this.peerCursors[conn.peer].clear();
                     console.log("removed cursor");
@@ -192,6 +196,7 @@ PeerWrapper.prototype = {
                 console.log(typeof jsonData);
                 console.log(typeof jsonData.messageData)
             } else if (jsonData.MessageType === MessageType.SequenceOp) {
+                this.forwardMessage(jsonData);
                 // TODO this is where the ordering logic should go 
                 // TODO this doesn't really make it work on multiple lines (only one) rn
                 // TODO batching...
@@ -408,6 +413,15 @@ PeerWrapper.prototype = {
     },
     incrementReconnectAttempt: function (wrapLength) {
         this.lastReconnectAttempt = (this.lastReconnectAttempt + 1) % wrapLength;
+    },
+    forwardMessage: function (jsonData) {
+        // check if we've already received this message before
+        var objHash = hash(jsonData);
+        if (this.messagesSeen.includes(objHash)) return;
+
+        // if not, forward it to all directly connected peers
+        this.messagesSeen.push(objHash);
+        this.broadcast(jsonData);
     }
 
 }
