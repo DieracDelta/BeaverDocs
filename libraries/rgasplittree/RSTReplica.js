@@ -582,7 +582,9 @@ RSTReplica.prototype = {
                     var yeet = this.cursor.offset
                     var yeet2 = this.getOffset(this.cursor.node.key)
                     console.log("now at: " + yeet + ", " + yeet2);
-                }
+                } else {
+		    console.log("SHIT IS NOW NULL GDI");
+		}
                 return
             }
             remainingOffset -= curNode.content.length;
@@ -597,7 +599,9 @@ RSTReplica.prototype = {
             var yeet = this.cursor.offset
             var yeet2 = this.getOffset(this.cursor.node.key)
             console.log("now at: " + yeet + ", " + yeet2);
-        }
+        } else {
+	    console.log("SHIT IS NOW NULL 2");
+	}
     },
     getNextLiveNodeLinkedList: function (node) {
         var curNode = node;

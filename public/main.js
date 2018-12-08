@@ -121,7 +121,12 @@ window.editor.on('cursorActivity', (editor) => {
         if (!window.editor.getSelection()) {
             var cur_pos = window.editor.indexFromPos(window.editor.getDoc().getCursor());
             if (cur_pos < 10000) {
+                console.log("CURRENT POSITION IS: " + cur_pos + "WITH OTHER THING AS: " + window.editor.posFromIndex(cur_pos).ch + ", " + window.editor.posFromIndex(cur_pos).line)
                 curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+                // window.editor.setCursor({
+                //     line: window.editor.posFromIndex(cur_pos).line,
+                //     ch: window.editor.posFromIndex(cur_pos).ch
+                // });
                 window.editor.setCursor({
                     line: window.editor.posFromIndex(cur_pos).line,
                     ch: window.editor.posFromIndex(cur_pos).ch
@@ -148,6 +153,7 @@ window.editor.on('keyHandled', (editor, c, e) => {
             line: c.from.line
         })
         if (cur_pos < 10000) {
+            console.log("INSERTING POSITION AT: " + cur_pos);
             curPeerWrapper.crdt.replica.insertCursor(cur_pos);
             window.editor.setCursor({
                 line: window.editor.getDoc().posFromIndex(cur_pos).line,
