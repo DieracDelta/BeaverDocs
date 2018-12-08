@@ -35,54 +35,6 @@ document.getElementById('myID').innerHTML = "id: " + String(curPeerWrapper.sid);
 
 // var lastActivityWasInsertOrDelete = false;
 
-window.editor.on('beforeChange', (editor, c) => {
-    // console.log(c);
-    // if (c.origin === '+input' || c.origin === '+delete') {
-    //     var cur_pos = window.editor.getDoc().indexFromPos({
-    //         ch: c.from.ch,
-    //         line: c.from.line
-    //     })
-    //     if (cur_pos < 10000) {
-    //         console.log("CURRENT POS: " + cur_pos)
-    //         curPeerWrapper.crdt.replica.insertCursor(cur_pos);
-    //         window.editor.setCursor({
-    //             line: 0,
-    //             ch: cur_pos
-    //         });
-    //         if (curPeerWrapper.crdt.replica.cursor.node !== null) {
-    //             var crdtcurpos = curPeerWrapper.crdt.getOffset(curPeerWrapper.crdt.replica.node.key)
-    //             console.log("inserting CRDT AT YEET: " +
-    //                 curPeerWrapper.crdt.replica.cursor.offset + crdtcurpos)
-    //             console.log("inserting LOCAL AT YEET: " + cur_pos)
-    //         }
-    //     }
-    // }
-
-    // console.log("C ORGIN IS: " + c.origin)
-    if (c.origin === '+input' || c.origin === '+delete') {
-        // lastActivityWasInsertOrDelete = true;
-        //     var cur_pos = window.editor.getDoc().indexFromPos({
-        //         ch: c.from.ch,
-        //         line: c.from.line
-        //     })
-        //     if (cur_pos < 10000) {
-        //         curPeerWrapper.crdt.replica.insertCursor(cur_pos);
-        //         window.editor.setCursor({
-        //             line: 0,
-        //             ch: cur_pos
-        //         });
-        //         console.log("shit mate")
-        //         if (curPeerWrapper.crdt.replica.cursor.node !== null) {
-        //             console.log("inserting CRDT AT YEET: " + curPeerWrapper.crdt.replica.cursor.offset + curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key));
-        //             console.log("inserting LOCAL AT YEET: " + cur_pos);
-        //         }
-        //         console.log("sad")
-        //     }
-    }
-});
-
-
-
 var movedByMouse = false;
 
 window.editor.on("mousedown", function () {
@@ -153,11 +105,12 @@ window.editor.on('keyHandled', (editor, c, e) => {
             line: c.from.line
         })
         if (cur_pos < 10000) {
-            console.log("INSERTING POSITION AT: " + cur_pos);
             curPeerWrapper.crdt.replica.insertCursor(cur_pos);
+            var new_pos = curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + curPeerWrapper.crdt.replica.cursor.offset;
+            console.log("INSERTING POSITION AT, FUCK: " + new_pos);
             window.editor.setCursor({
-                line: window.editor.getDoc().posFromIndex(cur_pos).line,
-                ch: window.editor.getDoc().posFromIndex(cur_pos).ch
+                line: window.editor.getDoc().posFromIndex(new_pos).line,
+                ch: window.editor.getDoc().posFromIndex(new_pos).ch
             });
         }
     }
@@ -202,15 +155,15 @@ window.editor.on('keyHandled', (editor, c, e) => {
 
 window.editor.on('change', (editor, obj) => {
     console.log("OBJ CHANGED: " + obj);
-    document.getElementById("lastchange").innerHTML =
-        (
-            `Last change metadata: \
-            \n\tFROM:${window.editor.getDoc().indexFromPos(obj.from)}\
-            \n\tTO:${window.editor.getDoc().indexFromPos(obj.to)}\
-            \n\tTEXT:${obj.text}\
-            \n\tREMOVED:${obj.removed}\
-            \n\tOPTYPE:${obj.origin}`
-        );
+    // document.getElementById("lastchange").innerHTML =
+    //     (
+    //         `Last change metadata: \
+    //         \n\tFROM:${window.editor.getDoc().indexFromPos(obj.from)}\
+    //         \n\tTO:${window.editor.getDoc().indexFromPos(obj.to)}\
+    //         \n\tTEXT:${obj.text}\
+    //         \n\tREMOVED:${obj.removed}\
+    //         \n\tOPTYPE:${obj.origin}`
+    //     );
     var seqops = -1;
     var fromAbs = window.editor.getDoc().indexFromPos(obj.from);
     console.log("fromAbs is" + fromAbs);
@@ -222,6 +175,15 @@ window.editor.on('change', (editor, obj) => {
     console.log("INSERTED TEXT LEN IS : " + obj.text.length);
     console.log("reduced thing is: " + insertedText.reduce((a, b) => a + b, ""))
     console.log("SHIT MAN " + (insertedText.reduce((a, b) => a + b, "") === "\n"))
+    if (insertedText.reduce((a, b) => a + b, "") == curPeerWrapper.crdt.toString() || insertedText == curPeerWrapper.crdt.toString()) {
+        console.log("YOU REALLY FUCKED UP THIS TIME")
+        if (curPeerWrapper.crdt.replica.cursor.node !== null) {
+            var new_pos = (curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + ',' + curPeerWrapper.crdt.replica.cursor.offset);
+            console.log("THE CRDT POSITION NOW IS: " + new_pos)
+
+        }
+        return;
+    }
 
     if (obj.origin === "+delete") {
         seqops = new ops.generateSeqOpsForDelete(fromAbs, toAbs);
@@ -237,7 +199,22 @@ window.editor.on('change', (editor, obj) => {
         console.log("unsupported operation!");
         return;
     }
+    if (curPeerWrapper.crdt.replica.cursor.node !== null) {
+        var new_pos = (curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + ',' + curPeerWrapper.crdt.replica.cursor.offset);
+        console.log("PRE INSERTION crdt: " + new_pos);
+        console.log("PRE INSERTION: position" + getPos())
+    }
     var rops = curPeerWrapper.crdt.applyLocal(seqops);
+    if (curPeerWrapper.crdt.replica.cursor.node !== null) {
+        var new_pos = (curPeerWrapper.crdt.replica.getOffset(curPeerWrapper.crdt.replica.cursor.node.key) + ',' + curPeerWrapper.crdt.replica.cursor.offset);
+        console.log("POST INSERTION crdt: " + new_pos);
+        console.log("POST INSERTION: position" + getPos())
+        window.editor.setCursor({
+            line: window.editor.posFromIndex(new_pos).line,
+            ch: window.editor.posFromIndex(new_pos).ch
+        });
+    }
+
     var broadcastObj = {
         MessageType: Helpers.MessageType.SequenceOp,
         RemoteOps: rops,
@@ -248,7 +225,7 @@ window.editor.on('change', (editor, obj) => {
 });
 
 function getPos() {
-    console.log(editor.getDoc().getCursorPosition().indexFromPos())
+    return (editor.getDoc().getCursor().ch + ", " + editor.getDoc().getCursor().line)
 }
 
 document.getElementById('copyID').onclick = function () {

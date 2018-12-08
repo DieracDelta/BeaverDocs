@@ -70,6 +70,11 @@ RSTReplica.prototype = {
         refNode.nextLink = insNode;
         this.dict.set(op.vTomb.hash(), insNode);
         this.size += insNode.length;
+        if (this.cursor.node !== null && refNode.key === this.cursor.node.key && this.cursor.offset === refNode.content.length) {
+            console.log("SO WE DEF HIT THIS LINE ... ")
+            this.cursor.node = insNode;
+            this.cursor.offset = 1;
+        }
         this.checkRep();
     },
     // perform remote delete
@@ -583,8 +588,8 @@ RSTReplica.prototype = {
                     var yeet2 = this.getOffset(this.cursor.node.key)
                     console.log("now at: " + yeet + ", " + yeet2);
                 } else {
-		    console.log("SHIT IS NOW NULL GDI");
-		}
+                    console.log("SHIT IS NOW NULL GDI");
+                }
                 return
             }
             remainingOffset -= curNode.content.length;
@@ -600,8 +605,8 @@ RSTReplica.prototype = {
             var yeet2 = this.getOffset(this.cursor.node.key)
             console.log("now at: " + yeet + ", " + yeet2);
         } else {
-	    console.log("SHIT IS NOW NULL 2");
-	}
+            console.log("SHIT IS NOW NULL 2");
+        }
     },
     getNextLiveNodeLinkedList: function (node) {
         var curNode = node;

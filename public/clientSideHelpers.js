@@ -240,14 +240,12 @@ PeerWrapper.prototype = {
                     this.Q.unshift([anOp, arrVc]);
                     var newQ = [];
                     console.log(this.Q);
-                    var wasmodified = false;
 
                     for (var q in this.Q) {
-                        console.log("External " + this.Q[q][1]);
-                        console.log("causaul" + vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC));
+                        //console.log("External " + this.Q[q][1]);
+                        //console.log("causaul" + vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC));
 
                         if (vectorclock.isCausual(this.Q[q][1], this.crdt.siteVC)) {
-                            wasmodified = true;
                             // console.log("executing opp")
                             nextOp = this.Q[q][0];
                             var crdtPos = -1;
@@ -262,17 +260,14 @@ PeerWrapper.prototype = {
                         }
                     }
                     this.Q = newQ;
-                    if (wasmodified) {
-
-                        this.editor.setValue(this.crdt.toString());
-                        if (this.crdt.replica.head !== null) {
-                            if (this.crdt.replica.cursor.node === null) {
-                                this.crdt.replica.cursor.node = this.crdt.replica.head;
-                            }
-                            var crdtPos = this.crdt.replica.getOffset(this.crdt.replica.cursor.node.key) + this.crdt.replica.cursor.offset;
-                            console.log("CRDT POS:" + crdtPos);
-                            this.editor.setCursor(this.editor.posFromIndex(crdtPos));
+                    this.editor.setValue(this.crdt.toString());
+                    if (this.crdt.replica.head !== null) {
+                        if (this.crdt.replica.cursor.node === null) {
+                            this.crdt.replica.cursor.node = this.crdt.replica.head;
                         }
+                        var crdtPos = this.crdt.replica.getOffset(this.crdt.replica.cursor.node.key) + this.crdt.replica.cursor.offset;
+                        console.log("CRDT POS:" + crdtPos);
+                        this.editor.setCursor(this.editor.posFromIndex(crdtPos));
                     }
                 }
             }
